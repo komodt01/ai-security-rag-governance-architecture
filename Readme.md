@@ -120,3 +120,11 @@ ai-security-rag-governance-architecture/
 └── cloud_reference_only/
     ├── aws_bedrock_design_only.md
     └── azure_openai_design_only.md
+
+## Additional Compliance Update
+
+ISO/IEC 42001 was added after the initial documentation phase to strengthen the AI governance and AI management system alignment of this project.
+
+Added file:
+
+- `compliance/iso_42001_mapping.md` — Maps the project to ISO/IEC 42001 AI Management System concepts, including AI governance, risk assessment, human oversight, data governance, monitoring, incident response, supplier review, and continual improvement.
