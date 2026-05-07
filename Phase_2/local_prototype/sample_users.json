@@ -1,1 +1,84 @@
-
+{
+  "users": [
+    {
+      "user_id": "mock_user_001",
+      "display_name": "General Employee User",
+      "role": "General Employee",
+      "groups": [
+        "general_users"
+      ],
+      "description": "Standard employee with access to general internal AI usage guidance."
+    },
+    {
+      "user_id": "mock_user_002",
+      "display_name": "Business Analyst User",
+      "role": "Business Analyst",
+      "groups": [
+        "general_users",
+        "business_analysis"
+      ],
+      "description": "Business analyst with access to general process and approved architecture guidance."
+    },
+    {
+      "user_id": "mock_user_003",
+      "display_name": "Engineer User",
+      "role": "Engineer",
+      "groups": [
+        "general_users",
+        "engineering"
+      ],
+      "description": "Engineer with access to approved technical and cloud logging guidance."
+    },
+    {
+      "user_id": "mock_user_004",
+      "display_name": "Security Architect User",
+      "role": "Security Architect",
+      "groups": [
+        "general_users",
+        "security_architecture",
+        "restricted_security_review"
+      ],
+      "description": "Security architect with access to security architecture, IAM, logging, and approved restricted security guidance."
+    },
+    {
+      "user_id": "mock_user_005",
+      "display_name": "IAM Analyst User",
+      "role": "IAM Analyst",
+      "groups": [
+        "general_users",
+        "iam_governance"
+      ],
+      "description": "IAM analyst with access to identity governance, access control, and IAM role design documentation."
+    },
+    {
+      "user_id": "mock_user_006",
+      "display_name": "Compliance Analyst User",
+      "role": "Compliance Analyst",
+      "groups": [
+        "general_users",
+        "compliance"
+      ],
+      "description": "Compliance analyst with access to compliance mappings and approved audit-related guidance."
+    },
+    {
+      "user_id": "mock_user_007",
+      "display_name": "Security Reviewer User",
+      "role": "Security Reviewer",
+      "groups": [
+        "general_users",
+        "security_review",
+        "restricted_security_review"
+      ],
+      "description": "Security reviewer with access to restricted documents and high-risk AI review workflows."
+    },
+    {
+      "user_id": "mock_user_008",
+      "display_name": "AI System Administrator User",
+      "role": "AI System Administrator",
+      "groups": [
+        "ai_system_admin"
+      ],
+      "description": "System administrator for prototype configuration. This role does not automatically grant access to restricted document content."
+    }
+  ]
+}
