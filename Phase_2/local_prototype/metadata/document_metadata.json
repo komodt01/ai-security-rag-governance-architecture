@@ -1,1 +1,188 @@
-
+{
+  "documents": [
+    {
+      "document_id": "AI-POL-001",
+      "title": "Mock AI Acceptable Use Policy",
+      "file_path": "sample_docs/ai_usage_policy.md",
+      "classification": "internal",
+      "status": "approved",
+      "owner": "Security Governance",
+      "source_system": "local_prototype",
+      "version": "1.0",
+      "review_date": "2026-01-01",
+      "expiration_date": "2027-01-01",
+      "tags": [
+        "ai usage",
+        "acceptable use",
+        "employee guidance",
+        "policy"
+      ],
+      "allowed_roles": [
+        "General Employee",
+        "Business Analyst",
+        "Engineer",
+        "Security Architect",
+        "IAM Analyst",
+        "Compliance Analyst",
+        "Security Reviewer"
+      ],
+      "allowed_groups": [
+        "general_users"
+      ],
+      "human_review_required": false,
+      "description": "Mock internal policy describing acceptable and prohibited AI assistant usage."
+    },
+    {
+      "document_id": "CLOUD-LOG-001",
+      "title": "Mock Cloud Logging Standard",
+      "file_path": "sample_docs/cloud_logging_standard.md",
+      "classification": "confidential",
+      "status": "approved",
+      "owner": "Security Architecture",
+      "source_system": "local_prototype",
+      "version": "1.0",
+      "review_date": "2026-01-01",
+      "expiration_date": "2027-01-01",
+      "tags": [
+        "cloud logging",
+        "monitoring",
+        "audit",
+        "security operations"
+      ],
+      "allowed_roles": [
+        "Engineer",
+        "Security Architect",
+        "Compliance Analyst",
+        "Security Reviewer"
+      ],
+      "allowed_groups": [
+        "engineering",
+        "security_architecture",
+        "compliance",
+        "security_review"
+      ],
+      "human_review_required": false,
+      "description": "Mock confidential standard describing cloud logging, monitoring, auditability, and alerting expectations."
+    },
+    {
+      "document_id": "IAM-STD-001",
+      "title": "Mock IAM Role Design Standard",
+      "file_path": "sample_docs/iam_role_design_standard.md",
+      "classification": "confidential",
+      "status": "approved",
+      "owner": "IAM Governance",
+      "source_system": "local_prototype",
+      "version": "1.0",
+      "review_date": "2026-01-01",
+      "expiration_date": "2027-01-01",
+      "tags": [
+        "iam",
+        "role design",
+        "least privilege",
+        "access control",
+        "federation"
+      ],
+      "allowed_roles": [
+        "IAM Analyst",
+        "Security Architect",
+        "Security Reviewer"
+      ],
+      "allowed_groups": [
+        "iam_governance",
+        "security_architecture",
+        "security_review"
+      ],
+      "human_review_required": false,
+      "description": "Mock confidential IAM standard describing role design, least privilege, federation, and access governance."
+    },
+    {
+      "document_id": "IR-PLAY-001",
+      "title": "Mock Incident Response Playbook",
+      "file_path": "sample_docs/incident_response_playbook.md",
+      "classification": "restricted",
+      "status": "approved",
+      "owner": "Security Operations",
+      "source_system": "local_prototype",
+      "version": "1.0",
+      "review_date": "2026-01-01",
+      "expiration_date": "2027-01-01",
+      "tags": [
+        "incident response",
+        "security operations",
+        "containment",
+        "escalation",
+        "restricted"
+      ],
+      "allowed_roles": [
+        "Security Architect",
+        "Security Reviewer"
+      ],
+      "allowed_groups": [
+        "restricted_security_review",
+        "security_review"
+      ],
+      "human_review_required": true,
+      "description": "Mock restricted playbook used to test role-based access controls and human review triggers."
+    },
+    {
+      "document_id": "AUDIT-FIND-001",
+      "title": "Mock Audit Findings Summary",
+      "file_path": "sample_docs/audit_findings_summary.md",
+      "classification": "restricted",
+      "status": "approved",
+      "owner": "Compliance",
+      "source_system": "local_prototype",
+      "version": "1.0",
+      "review_date": "2026-01-01",
+      "expiration_date": "2027-01-01",
+      "tags": [
+        "audit",
+        "findings",
+        "compliance",
+        "control gaps",
+        "restricted"
+      ],
+      "allowed_roles": [
+        "Compliance Analyst",
+        "Security Reviewer"
+      ],
+      "allowed_groups": [
+        "compliance",
+        "security_review"
+      ],
+      "human_review_required": true,
+      "description": "Mock restricted audit summary used to test document authorization and review requirements."
+    }
+  ],
+  "classification_rules": {
+    "internal": {
+      "description": "General internal information available to authenticated mock users.",
+      "default_action": "allow_if_authenticated"
+    },
+    "confidential": {
+      "description": "Sensitive internal information limited to approved roles and groups.",
+      "default_action": "allow_if_authorized"
+    },
+    "restricted": {
+      "description": "Highly sensitive mock information limited to explicitly approved roles and groups.",
+      "default_action": "allow_if_authorized_and_log_review_context"
+    },
+    "prohibited": {
+      "description": "Content that must never be returned by the prototype.",
+      "default_action": "deny"
+    },
+    "unknown": {
+      "description": "Unclassified content should not be retrieved.",
+      "default_action": "deny_by_default"
+    }
+  },
+  "access_decision_rules": {
+    "deny_by_default": true,
+    "require_document_status_approved": true,
+    "require_classification": true,
+    "require_owner": true,
+    "require_allowed_role_or_group_match": true,
+    "log_all_access_decisions": true,
+    "log_denied_retrieval_attempts": true
+  }
+}
