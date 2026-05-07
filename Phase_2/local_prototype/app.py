@@ -1,4 +1,4 @@
-local_prototype/app.py
+app.py
 
 import json
 import re
