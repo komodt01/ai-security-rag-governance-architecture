@@ -1,5 +1,11 @@
 # AI Security Governance and RAG Risk Architecture for Regulated Environments
 
+### Project Scope Note
+
+* This repository contains the original AI Security Governance and RAG Risk Architecture project. The project focused on architecture, governance, threat modeling, access control, Retrieval-Augmented Generation security, compliance mapping, incident response, and local prototype planning. The architecture and cloud deployment materials are design artifacts and should not be interpreted as a fully implemented production AI environment.
+
+A separate healthcare AI security case study builds on these concepts by applying them to patient services and physician decision support. That case study expands the architecture into a specific regulated use case with stakeholder requirements, clinical data access, physician oversight, network and application programming interface controls, resilience, monitoring, and engineering handoff requirements.
+
 ## Project Overview
 
 This project demonstrates how a regulated organization can design, govern, and secure an internal AI assistant that uses Retrieval-Augmented Generation (RAG) to answer employee questions from approved internal documents.
