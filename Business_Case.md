@@ -55,7 +55,7 @@ The proposed solution is a secure, governed AI assistant architecture that inclu
 - Retrieval filtering based on user role
 - Prompt injection safeguards
 - Sensitive data detection
-- Source citations
+- Source traceability for retrieved information
 - Human review for high-risk responses
 - Logging and monitoring
 - AI incident response process
@@ -105,7 +105,7 @@ If properly governed, the AI assistant can:
 
 ## Success Criteria
 
-The architecture is successful if it:
+A production implementation of the architecture would be successful if it:
 
 - Prevents unauthorized document retrieval
 - Preserves document-level access boundaries
