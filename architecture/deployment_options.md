@@ -2,808 +2,552 @@
 
 ## Purpose
 
-This document compares deployment options for the secure enterprise AI assistant architecture.
+This document compares deployment approaches for the secure enterprise AI assistant architecture.
 
-The goal is to evaluate how the AI assistant could be implemented locally, internally, through cloud-managed AI services, or through third-party AI providers while maintaining security, governance, cost control, and compliance requirements.
+The objective is not to select a cloud platform by default. The objective is to determine which deployment model best satisfies the business requirement while balancing security, data handling, governance, operational complexity, and cost.
 
-This project begins with a local-first approach to avoid cloud cost exposure and reduce data handling risk.
+This project follows a local-first approach. Phase 1 established the architecture and governance model, and Phase 2 implemented a limited local security-control prototype.
 
-## Scope
-
-This document covers:
-
-- Documentation-only architecture phase
-- Local prototype option
-- Local LLM option
-- Mocked AI response option
-- Internal enterprise deployment option
-- AWS Bedrock reference design
-- Azure OpenAI reference design
-- OpenAI API reference design
-- Private model hosting reference design
-- SaaS AI tool option
-- Deployment decision criteria
-- Cost and risk considerations
-- Recommended phased approach
+AWS, Azure, external AI APIs, private model hosting, and SaaS AI platforms are evaluated as architecture options. They have not been deployed as part of this project.
 
 ## Deployment Principle
 
-The recommended deployment principle is:
+The guiding principle for this project is:
 
-Architecture first. Local prototype second. Cloud deployment last.
+> Architecture first. Validate controls locally. Introduce model or cloud dependencies only when they provide additional value.
 
-No cloud deployment should occur until cost controls, access controls, logging requirements, data classification, provider review, teardown steps, and human review workflows are documented.
+A more sophisticated deployment is not automatically a better architecture.
 
-## Deployment Options Summary
+Before introducing a cloud or external AI service, I would want to understand:
 
-| Option | Description | Cost Risk | Data Risk | Recommended For |
-|---|---|---|---|---|
-| Documentation Only | Architecture, governance, and control documentation only | None | None | Phase 1 portfolio and planning |
-| Local Mock Prototype | Local app with mock users, mock documents, and simulated responses | None | Low | Safe hands-on demonstration |
-| Local LLM Prototype | Local model using tools such as Ollama | Low | Low to Medium | Demonstrating AI behavior without cloud |
-| Internal Enterprise Deployment | Company-hosted application and internal infrastructure | Medium | Medium to High | Controlled enterprise use |
-| AWS Bedrock Reference | Managed model service through AWS | Medium to High | Medium to High | AWS architecture comparison only |
-| Azure OpenAI Reference | Managed model service through Azure | Medium to High | Medium to High | Microsoft enterprise architecture comparison |
-| OpenAI API Reference | External API-based model access | Medium | Medium to High | Vendor API comparison |
-| Private Model Hosting | Self-hosted model on private infrastructure | High | Medium | Organizations needing maximum control |
-| SaaS AI Tool | Commercial AI assistant or enterprise search product | Medium | Medium to High | Buy-versus-build evaluation |
+- What business or technical objective requires it
+- What data will cross the boundary
+- How identity and authorization will work
+- What provider or vendor risks are introduced
+- What monitoring and incident evidence will exist
+- What the operational dependencies are
+- What the cost exposure is
+- How the service can be disabled or removed
 
-## Option 1: Documentation-Only Architecture
+## Current Project State
 
-### Description
+The project currently includes two implemented phases.
 
-This option includes only architecture, governance, security, compliance, and incident response documentation.
+### Phase 1: Architecture and Governance
 
-No AI model is deployed. No cloud resources are used. No APIs are called.
-
-### Components
+Completed architecture work includes:
 
 - Business case
 - Reference architecture
-- Data flow
-- Trust boundaries
-- STRIDE threat model
-- OWASP LLM Top 10 mapping
-- Prompt injection controls
-- Access control model
+- Data-flow analysis
+- Trust-boundary analysis
+- Threat modeling
+- Access-control design
+- Data-classification design
+- Prompt injection control strategy
 - Logging and monitoring requirements
-- AI risk assessment
-- Data classification
-- Human review requirements
-- Compliance mappings
-- Incident response playbook
-- Cost controls
+- Human-review requirements
+- Incident-response planning
+- Security and compliance mappings
+- Cost-control strategy
+- Cloud reference designs
 
-### Advantages
+### Phase 2: Local Security-Control Prototype
 
-- No cloud cost
-- No data exposure
-- Strong architecture portfolio value
-- Easy to publish in GitHub
-- Demonstrates security architect thinking
-- Supports interviews and resume discussion
-- Safe for regulated environment examples
+A local Python prototype was implemented using:
 
-### Disadvantages
+- Mock users and roles
+- Mock groups
+- Synthetic documents
+- Document metadata
+- Pattern-based prompt-risk evaluation
+- Sensitive-data pattern detection
+- Simplified keyword retrieval
+- Role- and group-based authorization
+- Local JSONL logging
+- Security alerts
+- Simulated human-review triggers
+- Advisory response generation
 
-- No working prototype
-- Does not demonstrate runtime behavior
-- Some reviewers may want hands-on validation
-- Does not prove prompt filtering or retrieval controls technically
+The prototype does not use an LLM, embeddings, vector database, production identity provider, cloud AI service, or real enterprise data.
 
-### Cost Risk
+Initial documented testing validated an authorized retrieval path and a prompt injection attempt blocked before retrieval.
 
-None.
+Additional test scenarios are defined but have not yet been executed.
 
-### Data Risk
+## Deployment Options Summary
 
-None if only mock scenarios are documented.
+| Option | External Dependency | Relative Complexity | Cost Exposure | Project Status |
+| --- | --- | --- | --- | --- |
+| Documentation / Architecture | None | Low | None | Completed |
+| Local Security-Control Prototype | None | Low–Medium | None | Implemented |
+| Local LLM | Local model runtime | Medium | Low | Optional |
+| Internal Enterprise Platform | Enterprise infrastructure | High | Medium–High | Architecture option |
+| AWS Bedrock | AWS | High | Variable | Reference design only |
+| Azure OpenAI | Azure | High | Variable | Reference design only |
+| External AI API | External provider | Medium | Variable | Architecture option |
+| Private Model Hosting | Internal/private infrastructure | Very High | High | Architecture option |
+| SaaS AI Platform | SaaS vendor | Medium | Subscription/usage | Architecture option |
 
-### Recommendation
+The cost and complexity assessments are illustrative. Actual values would depend on workload, scale, architecture, licensing, and organizational capabilities.
 
-This is the correct starting point for the project.
+# Option 1: Local Security-Control Prototype
 
-## Option 2: Local Mock Prototype
+## Description
 
-### Description
+This is the deployment approach implemented for Phase 2.
 
-This option creates a lightweight local application that simulates how a secure AI assistant would behave.
+The prototype intentionally separates security-control validation from model deployment.
 
-The prototype can use mock users, mock roles, mock documents, basic keyword retrieval, prompt injection detection, and local logs without requiring a real AI model.
+It demonstrates how security decisions can surround an AI/RAG-style workflow without requiring a production AI stack.
 
-### Components
+## Architecture
 
-- Python application
-- Mock user roles
-- Mock document set
-- Document metadata file
-- Local retrieval logic
-- Prompt injection detection rules
-- Sensitive data pattern detection
-- Local JSONL logs
-- Simulated AI responses
-- Simulated human review triggers
+The implemented sequence is:
 
-### Example Folder Structure
+**Mock Identity → Prompt Risk Evaluation → Local Retrieval → Metadata Authorization → Logging / Review Trigger → Advisory Response**
 
-- local_prototype/
-  - README.md
-  - app.py
-  - requirements.txt
-  - sample_users.json
-  - sample_docs/
-    - ai_usage_policy.md
-    - cloud_logging_standard.md
-    - iam_role_design_standard.md
-    - incident_response_playbook.md
-  - metadata/
-    - document_metadata.json
-  - tests/
-    - prompt_injection_tests.md
-  - logs/
-    - prompt_events.jsonl
-    - retrieval_events.jsonl
-    - access_decisions.jsonl
-    - security_alerts.jsonl
-
-### Advantages
+## Advantages
 
 - No cloud cost
 - No external AI provider
-- Safe to test locally
-- Demonstrates access control logic
-- Demonstrates prompt injection detection
-- Demonstrates logging and monitoring concepts
-- Good hands-on extension for GitHub
-- Avoids data exposure
+- No real enterprise data
+- Easy to execute and inspect
+- Demonstrates authorization logic
+- Demonstrates pre-retrieval blocking
+- Produces security-event evidence
+- Keeps implementation focused on architecture controls
 
-### Disadvantages
+## Limitations
 
-- Simulated responses are less impressive than real AI output
-- Retrieval may be basic
-- Does not demonstrate model-specific behavior
-- Requires some Python implementation
+- No actual LLM
+- No embeddings
+- No semantic retrieval
+- No production identity integration
+- No enterprise SIEM
+- No production human-review workflow
+- No model-specific security testing
+- Simplified pattern-based detection
 
-### Cost Risk
+## Architecture Decision
 
-None.
+For this project, this was sufficient to validate selected security-control concepts without introducing unnecessary cost or infrastructure.
 
-### Data Risk
+# Option 2: Local LLM
 
-Low if only mock documents are used.
+## Description
 
-### Recommendation
+A future extension could introduce a locally hosted model using a runtime such as Ollama or another local inference platform.
 
-This is the best Phase 2 hands-on implementation option.
+Authorized local content could then be provided to the model after the existing security controls have been applied.
 
-## Option 3: Local LLM Prototype
+## Possible Components
 
-### Description
+Examples could include:
 
-This option uses a local model runtime, such as Ollama, to run a small model locally without sending prompts or documents to a cloud AI provider.
-
-The AI assistant can retrieve mock documents and pass approved context to the local model.
-
-### Possible Tools
-
-- Python
-- Streamlit
-- Ollama
-- ChromaDB or FAISS
-- Local markdown documents
-- Local JSON logs
-
-### Components
-
-- Local LLM runtime
-- Local vector store or keyword retrieval
-- Mock user roles
-- Mock document classifications
-- Prompt injection checks
-- Retrieval authorization
+- Local model runtime
+- Python application
+- Existing mock identity and authorization controls
+- Local documents
+- Keyword or semantic retrieval
+- Optional local vector store
 - Response validation
 - Local logging
 
-### Advantages
+## Advantages
 
-- No paid model API
-- No AWS or Azure cost
-- Keeps data local
-- Demonstrates real AI response generation
-- Stronger hands-on story than a purely mocked prototype
-- Good bridge between architecture and implementation
+- Introduces actual model behavior
+- Keeps synthetic information local
+- Avoids usage-based cloud model charges
+- Allows testing of model-specific behaviors
+- Could extend prompt-injection and response-validation testing
 
-### Disadvantages
+## Tradeoffs
 
-- Requires local setup
-- Model quality depends on hardware and selected model
-- Local models may be slower
-- Still requires careful prompt and output handling
-- Some laptops may struggle with larger models
+- Additional setup and maintenance
+- Hardware limitations
+- Model quality varies
+- Introduces another attack surface
+- Requires model lifecycle decisions
+- Could distract from the security architecture objective
 
-### Cost Risk
+## Architecture Decision
 
-Low to none, assuming existing local hardware.
+A local LLM is optional.
 
-### Data Risk
+I would add it only if I wanted to test a security question that cannot be evaluated with the existing control prototype.
 
-Low if only mock data is used.
+# Option 3: Internal Enterprise Deployment
 
-### Recommendation
+## Description
 
-This is a good optional Phase 3 after the local mock prototype is working.
+An enterprise implementation could host the assistant within organization-controlled infrastructure while integrating enterprise identity, approved repositories, monitoring, governance, and review workflows.
 
-## Option 4: Internal Enterprise Deployment
+The actual model could be internally hosted or provided through an approved managed service.
 
-### Description
+## Possible Components
 
-This option deploys the AI assistant within an enterprise-controlled environment using internal infrastructure, enterprise identity, approved document repositories, internal logging, and governance workflows.
-
-This could be hosted on internal Kubernetes, private cloud infrastructure, virtual machines, or enterprise platform services.
-
-### Components
-
-- Enterprise SSO
-- Internal application hosting
+- Enterprise identity provider
+- Application platform
 - Approved document repositories
+- Authorization service
 - Retrieval service
-- Vector database or enterprise search
-- Internal or approved model endpoint
-- SIEM integration
-- Human review workflow
-- Governance approval process
+- Search or vector platform
+- Approved model endpoint
+- Enterprise logging or SIEM
+- Human-review workflow
+- Governance and approval processes
 
-### Advantages
+## Advantages
 
-- Strong enterprise control
-- Better data governance
-- Integration with internal IAM
-- Supports document-level access
-- Can integrate with enterprise logging
-- Suitable for regulated environments
+- Strong integration with enterprise IAM
+- Greater control over data flows
+- Integration with existing monitoring
+- Potentially strong fit for regulated environments
+- Can preserve existing document authorization
 
-### Disadvantages
+## Tradeoffs
 
-- Higher operational complexity
-- Requires platform support
-- Requires security review
-- Requires data owner approval
-- Requires monitoring and support
-- May still require cloud or vendor services depending on model
+- Greater operational complexity
+- Platform support requirements
+- Security engineering requirements
+- Monitoring and lifecycle responsibilities
+- Potential infrastructure cost
+- May still introduce third-party model dependencies
 
-### Cost Risk
+## Architecture Decision
 
-Medium.
+This approach becomes appropriate when there is a real enterprise use case, organizational ownership, and sufficient operational maturity.
 
-### Data Risk
+# Option 4: AWS Bedrock Reference Design
 
-Medium to high depending on data used.
+## Description
 
-### Recommendation
+AWS Bedrock represents one possible managed-model architecture for an AWS-centered enterprise environment.
 
-Appropriate only after governance, data classification, logging, and access controls are mature.
+The project contains AWS material as a **reference design only**. No Bedrock environment was deployed for this project.
 
-## Option 5: AWS Bedrock Reference Design
+## Possible Components
 
-### Description
-
-This option uses AWS Bedrock as a managed foundation model service. The assistant may retrieve approved documents from AWS storage or search services and send context to Bedrock for response generation.
-
-This project should treat AWS Bedrock as a reference design only unless cost controls are fully implemented.
-
-### Possible AWS Components
+Depending on requirements, an AWS implementation could evaluate:
 
 - Amazon Bedrock
-- Amazon S3 for approved documents
-- AWS IAM Identity Center
-- IAM roles and policies
+- Amazon S3
+- AWS IAM / IAM Identity Center
 - AWS KMS
 - AWS CloudTrail
 - Amazon CloudWatch
 - AWS Lambda
-- Amazon OpenSearch Serverless or another retrieval layer
-- AWS Budgets
-- AWS Cost Explorer
+- A suitable retrieval or search service
+- AWS Budgets and cost monitoring
 
-### Advantages
+The exact service selection should follow the architecture requirements rather than treating every possible AWS service as mandatory.
 
-- AWS-native architecture pattern
-- Managed model access
-- Integrates with IAM and CloudTrail
-- Strong fit for AWS-focused portfolio discussions
-- Useful for Solutions Architect or Cloud Security Architect positioning
+## Security Considerations
 
-### Disadvantages
+An implementation would need decisions around:
 
-- Cloud cost exposure
-- Managed AI usage charges
-- Possible retrieval or storage cost
-- Requires careful IAM design
-- Requires provider data handling review
-- Requires teardown and budget controls
-- Could become expensive if misconfigured
+- Identity and least privilege
+- Document authorization
+- Encryption
+- Network architecture
+- Model/provider data handling
+- Logging
+- Retrieval security
+- Incident response
+- Regional requirements
+- Cost monitoring
+- Teardown
 
-### Cost Risk
+## Architecture Decision
 
-Medium to high.
+AWS Bedrock is useful as an AWS reference architecture but is not required to demonstrate the current security design.
 
-### Data Risk
+Cloud deployment should occur only when it provides additional business or technical value.
 
-Medium to high depending on documents and provider configuration.
+# Option 5: Azure OpenAI Reference Design
 
-### Required Controls Before Deployment
+## Description
 
-- AWS Budget
-- Billing alerts
-- Service cost estimate
-- IAM least privilege review
-- KMS encryption design
-- CloudTrail logging
-- CloudWatch monitoring
-- Data classification approval
-- Document ingestion approval
-- Teardown process
-- Maximum spend limit
-- Region selection
-- Resource tagging
-- Human review workflow
-- Incident response plan
+Azure OpenAI represents a possible architecture for organizations already centered on Microsoft identity, security, and cloud services.
 
-### Recommendation
+The project treats this as a **reference design only**. Azure OpenAI was not deployed as part of the project.
 
-Document as a cloud reference architecture only. Do not deploy during early project phases.
+## Possible Components
 
-## Option 6: Azure OpenAI Reference Design
-
-### Description
-
-This option uses Azure OpenAI with Microsoft Entra ID, Azure Monitor, Azure Key Vault, storage services, and possibly Azure AI Search for retrieval.
-
-This option may be appropriate for Microsoft-heavy enterprise environments.
-
-### Possible Azure Components
+Depending on requirements, an Azure implementation could evaluate:
 
 - Azure OpenAI
 - Microsoft Entra ID
 - Azure AI Search
-- Azure Blob Storage
+- Azure Storage
 - Azure Key Vault
 - Azure Monitor
-- Log Analytics Workspace
+- Log Analytics
 - Microsoft Sentinel
 - Azure Policy
 - Azure Cost Management
 
-### Advantages
+Again, these are possible services rather than a required bill of materials.
 
-- Strong enterprise identity integration
-- Good fit for Microsoft-heavy organizations
-- Integrates with Entra ID and Azure monitoring
-- Supports enterprise governance patterns
-- Useful for regulated enterprise architecture discussions
+## Security Considerations
 
-### Disadvantages
+An implementation would need decisions around:
 
-- Cloud cost exposure
-- Azure OpenAI access and configuration requirements
-- Requires data handling review
-- Requires careful logging and retention design
-- Requires cost management
-- Requires cloud deployment controls
+- Entra ID authorization
+- Conditional Access
+- Managed identities and secrets
+- Private versus public connectivity
+- Document authorization
+- Provider data handling
+- Logging and retention
+- Incident response
+- Cost management
+- Human review
 
-### Cost Risk
+## Architecture Decision
 
-Medium to high.
+Azure OpenAI could be appropriate for a Microsoft-centered enterprise environment but is not required for the current project.
 
-### Data Risk
+# Option 6: External AI API
 
-Medium to high depending on data and configuration.
+## Description
 
-### Required Controls Before Deployment
+Another design could call an external AI API directly from the application.
 
-- Azure budget alerts
-- Cost estimate
-- Entra ID access model
-- Conditional Access requirements
-- Key Vault for secrets
-- Log Analytics monitoring
-- Data classification review
-- Provider data handling review
-- Private networking review if applicable
-- Teardown process
-- Human review workflow
-- Incident response process
+This creates an explicit external trust boundary because approved prompt and context information leave the organization's application environment.
 
-### Recommendation
+## Security Considerations
 
-Document as a reference design. Do not deploy until cost and governance controls are complete.
+Before using an external API, I would evaluate:
 
-## Option 7: OpenAI API Reference Design
-
-### Description
-
-This option uses the OpenAI API or another external AI API provider directly from the application.
-
-The assistant sends approved prompts and context to the API and receives generated responses.
-
-### Components
-
-- Application layer
-- API key or service credential
-- Prompt handling layer
-- Retrieval layer
-- Model API call
-- Response validation
+- Provider security
+- Data retention
+- Data usage and training terms
+- Authentication method
+- Secret management
+- Data minimization
+- Regional processing requirements
+- Contractual requirements
 - Logging
-- Cost monitoring
+- Availability
+- Usage limits
+- Cost controls
+- Incident-response responsibilities
 
-### Advantages
+## Advantages
 
-- Easier to prototype than some cloud-native options
-- Strong model capability
-- Flexible application design
-- No need to manage model infrastructure
+- Lower infrastructure burden
+- Rapid access to model capability
+- Flexible application integration
 
-### Disadvantages
+## Tradeoffs
 
-- External provider data handling risk
-- API key management required
-- Usage-based cost risk
-- Requires vendor review
-- Requires prompt and response logging decisions
-- Requires careful data minimization
+- External data transfer
+- Vendor dependency
+- Usage-based cost
+- Secret or credential management
+- Contract and provider review
+- Reduced infrastructure control
 
-### Cost Risk
+## Architecture Decision
 
-Medium.
+The decision should be based on approved data handling and business need, not simply ease of integration.
 
-### Data Risk
+# Option 7: Private Model Hosting
 
-Medium to high depending on data sent.
+## Description
 
-### Required Controls Before Deployment
+An organization could host its own model on internal or privately controlled infrastructure.
 
-- API usage limits
-- Budget threshold
-- API key protection
-- Provider data retention review
-- No sensitive data without approval
-- Prompt and response filtering
-- Logging minimization
-- Human review triggers
-- Incident response plan
+## Possible Components
 
-### Recommendation
-
-Use only as a reference option unless explicitly approved. Local-first remains safer.
-
-## Option 8: Private Model Hosting
-
-### Description
-
-This option hosts a model on private infrastructure controlled by the organization.
-
-The model may run on internal servers, private cloud infrastructure, Kubernetes, GPUs, or dedicated AI platforms.
-
-### Components
-
-- Private compute environment
+- Private compute
 - Model runtime
 - Model artifact repository
-- Vector database or retrieval service
-- Internal identity integration
+- Retrieval platform
+- Enterprise IAM
 - Logging and monitoring
 - Model lifecycle management
-- Security hardening
-- Patch management
+- Vulnerability and patch management
+- Capacity management
 
-### Advantages
+## Advantages
 
-- Maximum infrastructure control
-- Reduced external data exposure
-- Can support strict data residency requirements
-- Customizable security controls
-- Avoids external model API retention concerns
+- Greater infrastructure control
+- Reduced dependency on external inference APIs
+- Potential support for strict data-residency requirements
+- Greater customization
 
-### Disadvantages
+## Tradeoffs
 
-- High complexity
-- High infrastructure cost
-- Requires AI/ML operations expertise
-- Requires GPU or high-performance compute for larger models
-- Requires patching, monitoring, scaling, and lifecycle management
-- Model performance may lag managed providers
+- High infrastructure complexity
+- Compute expense
+- Specialized engineering requirements
+- Model lifecycle responsibility
+- Patching and vulnerability management
+- Capacity and availability engineering
 
-### Cost Risk
+## Architecture Decision
 
-High.
+Private hosting should not be selected merely because it appears more secure.
 
-### Data Risk
+The additional operational responsibility can itself create risk.
 
-Medium, depending on internal controls.
+It is appropriate only when requirements justify the complexity and the organization has the capability to operate it securely.
 
-### Recommendation
+# Option 8: SaaS AI or Enterprise Search Platform
 
-Not recommended for this project unless the organization has strong AI platform engineering capability.
+## Description
 
-## Option 9: SaaS AI Assistant or Enterprise Search Tool
+An organization may choose to purchase an AI assistant, enterprise search platform, or AI-enabled knowledge product instead of building one.
 
-### Description
+## Security Considerations
 
-This option uses a vendor-provided AI assistant, enterprise search tool, or knowledge management product.
+Important evaluation areas include:
 
-Examples may include AI-enabled workplace search, document assistant tools, productivity suite AI features, or vendor-hosted RAG platforms.
-
-### Components
-
-- SaaS provider
-- Enterprise SSO integration
-- Document connector
-- Vendor-managed model
-- Vendor logs and admin portal
-- Data access permissions
-- Governance controls
-
-### Advantages
-
-- Faster deployment
-- Vendor-managed infrastructure
-- Often integrates with enterprise productivity tools
-- May include built-in governance features
-- Lower internal engineering burden
-
-### Disadvantages
-
-- Vendor data handling risk
-- Connector permission complexity
-- Harder to validate retrieval behavior
-- Possible overbroad document access
-- Limited control over model behavior
-- Licensing cost
-- Audit evidence may depend on vendor capabilities
-
-### Cost Risk
-
-Medium.
-
-### Data Risk
-
-Medium to high.
-
-### Required Controls Before Deployment
-
-- Vendor risk review
-- Contract review
-- Data retention review
-- Training data opt-out review
-- SSO and MFA integration
-- Connector permission review
-- Least privilege document access
-- Logging and audit evidence review
-- Admin role review
-- User training
-- Acceptable use policy
-
-### Recommendation
-
-Useful for buy-versus-build comparison, but not the best starting point for this portfolio project.
-
-## Deployment Decision Matrix
-
-| Criteria | Documentation Only | Local Mock | Local LLM | AWS Bedrock | Azure OpenAI | OpenAI API | Private Hosting | SaaS AI |
-|---|---|---|---|---|---|---|---|---|
-| No Cloud Cost | Yes | Yes | Yes | No | No | Partial | No | No |
-| No External Data Transfer | Yes | Yes | Yes | No | No | No | Yes | No |
-| Hands-On Demo Value | Low | Medium | High | High | High | High | High | Medium |
-| Security Architecture Value | High | High | High | High | High | High | High | Medium |
-| Implementation Complexity | Low | Medium | Medium | High | High | Medium | Very High | Low |
-| Cost Risk | None | None | Low | Medium/High | Medium/High | Medium | High | Medium |
-| Data Risk | None | Low | Low | Medium/High | Medium/High | Medium/High | Medium | Medium/High |
-| Best for Phase 1 | Yes | No | No | No | No | No | No | No |
-| Best for Phase 2 | No | Yes | Optional | No | No | No | No | No |
-| Best for Reference Design | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes |
-
-## Recommended Phased Roadmap
-
-### Phase 1: Documentation-First Architecture
-
-Status: Recommended starting point.
-
-Deliverables:
-
-- README
-- Business case
-- Reference architecture
-- Data flow
-- Trust boundaries
-- STRIDE threat model
-- OWASP LLM Top 10 mapping
-- Prompt injection controls
-- Access control model
-- Logging and monitoring requirements
-- AI risk assessment
-- Data classification
-- Human review requirements
-- NIST AI RMF mapping
-- Incident response playbook
-- Cost controls
-
-Cost: $0.
-
-### Phase 2: Local Mock Prototype
-
-Status: Recommended next hands-on step.
-
-Deliverables:
-
-- Mock users
-- Mock roles
-- Mock documents
-- Document metadata
-- Prompt injection detection
-- Role-based retrieval filtering
-- Local logs
-- Simulated response validation
-- Simulated human review triggers
-
-Cost: $0.
-
-### Phase 3: Local LLM Prototype
-
-Status: Optional after local mock prototype.
-
-Deliverables:
-
-- Local model runtime
-- Local RAG pattern
-- Local vector store
-- Response generation from mock documents
-- Prompt and response filtering
-- Local logging
-
-Cost: $0 or low depending on local hardware.
-
-### Phase 4: Cloud Reference Architecture Only
-
-Status: Optional documentation expansion.
-
-Deliverables:
-
-- AWS Bedrock design only
-- Azure OpenAI design only
-- OpenAI API design only
-- Cloud cost controls
-- IAM design
-- Logging design
-- Teardown plans
-- Cloud risk assessment
-
-Cost: $0 if not deployed.
-
-### Phase 5: Controlled Cloud Pilot
-
-Status: Not recommended until required.
-
-Required before deployment:
-
-- Business reason
-- Cost estimate
-- Budget alerts
-- Teardown process
-- Data classification
-- Provider review
-- IAM review
-- Logging and monitoring
+- Enterprise SSO
+- MFA
+- Connector permissions
+- Document-level authorization
+- Data retention
+- Model/provider data usage
+- Administrative roles
+- Logging and audit evidence
+- Data residency
 - Incident response
-- Human review
-- Maximum spend threshold
+- Contractual requirements
+- Exit strategy
 
-Cost: Variable.
+## Advantages
 
-## Cost Decision Gate
+- Faster adoption
+- Lower infrastructure burden
+- Vendor-managed platform
+- Potential integration with existing productivity tools
 
-Before any cloud deployment, answer the following questions.
+## Tradeoffs
 
-| Question | Required Answer |
-|---|---|
-| What objective requires cloud deployment? |  |
-| Can the same objective be demonstrated locally? |  |
-| What services will be used? |  |
-| What is the hourly cost? |  |
-| What is the estimated monthly cost? |  |
-| What resources continue billing after testing? |  |
-| What is the maximum approved spend? |  |
-| Who receives budget alerts? |  |
-| What is the teardown process? |  |
-| What data will be used? |  |
-| Has data been classified? |  |
-| Has provider data handling been reviewed? |  |
-| Who owns the deployment? |  |
-| When will resources be destroyed? |  |
+- Vendor dependency
+- Connector permission complexity
+- Potentially opaque retrieval behavior
+- Licensing cost
+- Reduced platform control
+- Audit evidence dependent on vendor capabilities
 
-## High-Risk Services to Avoid Early
+## Architecture Decision
 
-Avoid the following during early phases:
+This should be evaluated as a buy-versus-build decision rather than automatically considered less secure or more secure than a custom platform.
 
-- Long-running EC2 instances
-- NAT Gateway
-- Managed Kubernetes clusters
-- Managed OpenSearch clusters
-- High-throughput vector databases
-- SageMaker endpoints
-- GPU instances
-- Multi-AZ databases
-- Large log ingestion
-- Large document datasets
-- Always-on API services
-- Production connectors
+# Deployment Decision Criteria
 
-## Safer Early Options
+Rather than choosing a platform first, I would evaluate each option against the same architecture questions.
 
-Use the following instead:
+| Decision Area | Question |
+| --- | --- |
+| Business | What problem requires this deployment? |
+| Data | What information will the system access? |
+| Identity | How is user identity established? |
+| Authorization | Where is document access enforced? |
+| Retrieval | How is unauthorized content excluded? |
+| Model | What information reaches the model? |
+| Provider | What external parties process the information? |
+| Monitoring | What evidence is generated? |
+| Human Review | Which consequences require human accountability? |
+| Resilience | What happens if the model or provider is unavailable? |
+| Incident Response | Can an AI-related event be reconstructed? |
+| Cost | What creates ongoing charges? |
+| Exit | Can the deployment be disabled or removed safely? |
 
-- Markdown files
-- Local Python scripts
-- Local mock documents
-- Local JSON logs
-- Local role simulation
-- Local prompt filters
-- Documentation-only cloud reference designs
-- GitHub repository structure
-- Architecture diagrams
+# Cloud Deployment Gate
 
-## Security Decision Gate
+Before deploying a cloud or external AI implementation, I would expect answers to questions such as:
 
-Before moving beyond local prototype, confirm:
+- What objective cannot be satisfied by the current local approach?
+- What services are required?
+- What data will leave the current trust boundary?
+- Has that data been classified?
+- Who owns the deployment?
+- How will users authenticate?
+- Where will authorization be enforced?
+- How will documents be governed?
+- How will secrets and encryption keys be protected?
+- What will be logged?
+- What information must not be logged?
+- What security events generate alerts?
+- What human-review process is required?
+- What provider obligations exist?
+- What is the expected cost?
+- What is the maximum acceptable spend?
+- Who receives cost alerts?
+- Which resources continue billing when idle?
+- What is the teardown process?
+- How quickly can the service be disabled?
 
-| Requirement | Status |
-|---|---|
-| Data classification complete | Not Started |
-| Access control model complete | Not Started |
-| Prompt injection controls complete | Not Started |
-| Retrieval authorization design complete | Not Started |
-| Logging requirements complete | Not Started |
-| Human review workflow complete | Not Started |
-| Incident response playbook complete | Not Started |
-| Cost controls complete | Not Started |
-| Vendor review complete if applicable | Not Started |
-| Compliance mapping complete | Not Started |
+# Cost Considerations
 
-## Deployment Recommendation
+The current project deliberately avoids services that would create unnecessary recurring cost.
 
-For this project, the recommended deployment path is:
+A production design might legitimately require services such as:
 
-1. Documentation-only architecture
-2. Local mock prototype
-3. Optional local LLM prototype
-4. Cloud reference designs only
-5. Controlled cloud pilot only if there is a clear business or learning need
+- Managed AI inference
+- Search or vector infrastructure
+- Long-running compute
+- Kubernetes
+- NAT or private connectivity
+- Databases
+- GPU infrastructure
+- Large-scale logging
+- Multi-region or highly available infrastructure
 
-The project should not begin with AWS, Azure, OpenAI API, or any paid AI service.
+These services are not inherently bad architecture.
 
-## Security Architect Notes
+The question is whether their business and technical value justify their security, operational, and financial cost.
 
-The deployment decision should be based on risk, business need, and control readiness, not excitement around AI tooling.
+For early validation, local files, Python, synthetic data, and local logs were sufficient.
 
-For a security architect, the important question is not simply, “Can we deploy an AI assistant?”
+# Future Options
 
-The better questions are:
+The current project does not require another deployment phase to be considered complete as an architecture case study.
 
-- What data will it access?
-- Who can use it?
-- What can it influence?
-- What happens if it is wrong?
-- What happens if it leaks data?
-- How is it monitored?
-- Who reviews high-risk output?
-- What is the cost exposure?
-- Can we shut it down quickly?
-- Can we prove the controls worked?
+Possible future extensions include:
 
-## Conclusion
+- Execute additional security test scenarios
+- Add automated tests
+- Improve retrieval behavior
+- Improve prompt-risk evaluation
+- Introduce a local LLM for model-specific security testing
+- Evaluate semantic retrieval
+- Build a true human-review gate
+- Expand AWS or Azure reference architectures
+- Conduct a controlled cloud pilot if there is a specific reason to do so
 
-The safest and most practical starting point is a documentation-first and local-first AI security project.
+These are possible extensions rather than unfinished requirements.
 
-This approach demonstrates architecture, governance, access control, prompt security, data protection, logging, human review, incident response, and compliance alignment without exposing the project owner to unexpected cloud costs.
+# Deployment Recommendation
 
-Cloud deployment should remain optional and should only occur after cost, security, governance, and data handling controls are fully documented.
+For this project, the path taken was:
+
+**Architecture and Governance → Local Security-Control Prototype → Selected Control Validation**
+
+That is currently sufficient for the project's objective.
+
+A future deployment decision should be driven by the next question that needs to be answered.
+
+If model behavior needs to be tested, a local LLM may be appropriate.
+
+If cloud IAM, managed-model controls, private networking, provider integration, or enterprise-scale monitoring needs to be evaluated, a controlled cloud implementation may be appropriate.
+
+If neither adds meaningful evidence, there is no architectural reason to deploy additional infrastructure.
+
+## Final Principle
+
+The deployment platform is an implementation choice.
+
+The security architecture should survive that choice.
+
+Whether the model eventually runs locally, internally, in AWS, in Azure, through an external API, or inside a SaaS platform, the same fundamental questions remain:
+
+**Who is the user? What are they authorized to know? What information may the AI access? Where is that authorization enforced? What happens when something fails? What evidence proves the controls worked?**
+
+Those questions should drive the deployment decision.
