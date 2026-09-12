@@ -2,141 +2,180 @@
 
 ## Purpose
 
-This project is designed to demonstrate AI security architecture without creating unexpected cloud costs.
+This project demonstrates AI security architecture while avoiding unnecessary cloud cost.
 
-The initial phases are documentation-first and local-first. No paid cloud services are required.
+The architecture work is documentation-first, and the implemented security-control prototype is local-first. No paid cloud services are required for the current project.
 
 ## Cost Control Principle
 
 The project follows this rule:
 
-> Architecture first. Local prototype second. Cloud deployment last, and only after cost controls, budgets, alerts, and teardown steps are in place.
+> Architecture first. Local validation second. Cloud deployment only when it provides additional value and appropriate cost controls are in place.
 
-## Phase 1: Documentation-Only
+The purpose of a cloud deployment should be established before resources are provisioned. If the same architecture or security objective can be demonstrated locally, cloud deployment is not required.
 
-Estimated cost: $0
+## Phase 1: Documentation and Architecture
+
+**Estimated cost: $0**
 
 Phase 1 includes:
 
-- Architecture documentation
+- Business case
+- Reference architecture
+- Data flow and trust boundaries
 - Threat modeling
-- Governance templates
+- Governance artifacts
 - Compliance mappings
+- Access-control design
 - Logging and monitoring design
-- Incident response playbook
-- Cloud reference architecture only
+- Incident-response planning
+- AWS and Azure design-only reference architectures
 
-No cloud resources are deployed.
+No cloud resources are required for this phase.
 
-## Phase 2: Local Prototype
+## Phase 2: Local Security Prototype
 
-Estimated cost: $0, assuming existing local hardware
+**Estimated cost: $0, assuming existing local hardware**
 
-Possible tools:
+The implemented prototype uses:
 
 - Python
-- Streamlit
-- ChromaDB or FAISS
-- Local markdown documents
-- Ollama or another local model runtime
+- Synthetic markdown documents
+- Mock users and roles
+- Local JSON metadata
+- Local JSONL logs
+- Pattern-based prompt-risk detection
+- Metadata-based authorization
+- Keyword-based document retrieval
 
-No external AI API is required.
+The prototype does not require:
 
-## Phase 3: Cloud Reference Design Only
+- External AI APIs
+- Cloud services
+- Vector databases
+- Production identity systems
+- Local or hosted LLMs
 
-Estimated cost: $0 unless explicitly deployed
+The prototype is intentionally limited to validating selected security-control concepts rather than reproducing a production AI/RAG platform.
 
-Cloud documents may describe:
+## Cloud Reference Designs
 
-- AWS Bedrock design
-- Azure OpenAI design
-- Identity and access control patterns
+**Estimated cost: $0 unless explicitly deployed**
+
+The project includes design-only cloud reference material that may describe:
+
+- AWS Bedrock
+- Azure OpenAI
+- Cloud identity and access patterns
 - Logging and monitoring patterns
+- Network and data-protection controls
 - Cost-control requirements
 
-These are design artifacts only.
+These are architecture artifacts only. They do not represent deployed cloud environments.
 
-## Do Not Deploy Without Controls
+## Cloud Deployment Decision Gate
 
-No cloud deployment should occur unless the following are completed first:
+Before deploying any cloud resources, answer:
 
-- Budget alert configured
-- Billing alarm configured
-- Region selected and documented
-- Resource tagging strategy defined
-- Teardown process written and tested
-- Estimated monthly cost documented
-- Maximum spend threshold defined
-- Owner identified
-- Deployment duration defined
-- Services reviewed for minimum charges or always-on costs
+1. What business, architecture, or learning objective requires cloud deployment?
+2. Can the same objective be demonstrated locally?
+3. What services will be provisioned?
+4. What is the estimated hourly and monthly cost?
+5. Which resources can continue billing after testing ends?
+6. What is the teardown process?
+7. Who owns the environment?
+8. Who receives budget or billing alerts?
+9. What is the maximum acceptable spend?
+10. How long will the environment remain active?
+11. What data will be used?
+12. What security, privacy, or compliance requirements apply?
 
-## AWS Cost Controls Required Before Any AWS Deployment
+If those questions cannot be answered, deployment should not proceed.
 
-Before deploying any AWS resources, the following must be in place:
+## Cost Controls Required Before Cloud Deployment
 
-- AWS Budget with email alert
-- CloudWatch billing alarm if supported in the account
-- Resource tags:
+Before a cloud environment is created, the project should define:
+
+- Budget and billing alerts
+- Maximum spend threshold
+- Resource ownership
+- Approved deployment region
+- Resource tagging or labeling strategy
+- Expected deployment duration
+- Estimated cost
+- Teardown procedure
+- Manual cleanup checklist
+- Services that may continue billing after use
+- Data-handling restrictions
+
+The exact implementation will depend on the selected cloud provider.
+
+## AWS Cost Controls
+
+If an AWS implementation is later created, appropriate controls should include:
+
+- AWS Budget with notification thresholds
+- CloudWatch billing alarm where applicable and supported
+- Resource tags such as:
   - Project
   - Owner
   - Environment
   - CostCenter
   - ExpirationDate
-- Terraform destroy instructions
-- Manual cleanup checklist
 - Service quota review
-- Daily cost check during testing
+- Cost monitoring during testing
+- Infrastructure teardown instructions
+- Manual verification that billable resources have been removed
 
-## High-Risk AWS Services to Avoid in Early Phases
+## Higher-Cost Services and Patterns
 
-Avoid using these services in early project phases unless cost is fully understood:
+Some cloud services and architecture patterns deserve additional cost review before being used in a portfolio or prototype environment.
+
+Examples include:
 
 - Amazon SageMaker
 - Amazon OpenSearch Service
 - Amazon Kendra
-- Long-running EC2 instances
-- NAT Gateway
-- Multi-AZ databases
-- Provisioned throughput resources
-- Large-scale logging ingestion
-- Large S3 datasets
+- Long-running compute instances
+- NAT gateways
 - Managed Kubernetes clusters
+- Multi-AZ databases
+- Provisioned-throughput resources
 - Always-on endpoints
 - GPU-backed services
+- Large-scale logging ingestion
+- Large datasets or high-volume storage
 
-## Safer Alternatives
+The concern is not that these services should never be used. The architecture should justify why they are necessary and understand their billing behavior before deployment.
 
-Use these instead during early project phases:
+## Local Alternatives
 
-| Need | Safer Local Option |
-|---|---|
-| AI model interaction | Local LLM via Ollama |
-| Vector database | ChromaDB or FAISS |
-| Web interface | Streamlit |
-| Documents | Local markdown files |
-| Logging | Local JSON or CSV logs |
-| Access control demo | Mock user roles |
-| Security testing | Local prompt injection test cases |
-| Architecture design | Markdown and diagrams |
+For early architecture validation, lower-cost local approaches may be sufficient.
 
-## Cloud Deployment Decision Gate
+| Need | Local Approach |
+| --- | --- |
+| Security-control logic | Python |
+| Documents | Local synthetic markdown files |
+| Identity demonstration | Mock users, roles, and groups |
+| Authorization | Local metadata and policy logic |
+| Prompt-risk testing | Local pattern-based detection |
+| Logging | Local JSONL files |
+| Security testing | Defined local test scenarios |
+| Architecture documentation | Markdown and diagrams |
+| Optional AI model interaction | Local LLM such as Ollama |
+| Optional vector search | ChromaDB or FAISS |
+| Optional web interface | Streamlit |
 
-Before any cloud deployment, answer these questions:
+The optional components are not part of the current implemented prototype.
 
-1. What business or learning objective requires cloud deployment?
-2. Can the same objective be demonstrated locally?
-3. What is the estimated hourly and monthly cost?
-4. What services can continue billing after testing?
-5. What is the teardown process?
-6. Who receives budget alerts?
-7. What is the maximum acceptable spend?
-8. How long will the environment remain active?
-9. What data will be used?
-10. What compliance or privacy concerns exist?
+## Current Project Cost
 
-## Final Cost Statement
+The documentation and implemented local prototype require no paid cloud services or external AI APIs.
 
-This project is intentionally structured to provide portfolio value without exposing the owner to unnecessary cloud costs.
+**Estimated current project cost: $0, assuming existing local hardware.**
 
-Cloud deployment is optional and should only occur after explicit cost review and approval.
+## Final Cost Principle
+
+Cost is an architecture constraint, not an afterthought.
+
+A cloud implementation should only be introduced when it provides capabilities or validation that cannot reasonably be achieved through the current local approach. Any future deployment should have defined ownership, cost visibility, spending limits, and teardown procedures before resources are created.
