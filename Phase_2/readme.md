@@ -1,37 +1,56 @@
-## Phase 2: Local Security Prototype
+# Phase 2: Local AI Security Prototype
 
-The next phase of this project will add a local, no-cloud-cost prototype to demonstrate selected security controls from the architecture documentation.
+## Purpose
 
-The prototype will use mock users, mock roles, mock documents, and local logs to show how a secure AI/RAG assistant could enforce access control, detect prompt injection attempts, and record security-relevant events.
+Phase 2 moves selected controls from the AI security architecture into a small local prototype.
 
-### Phase 2 Goals
+The goal was not to build a production RAG platform or deploy an LLM. I wanted to validate whether several of the security decisions from the architecture could be demonstrated in code before introducing cloud services, external AI APIs, or real enterprise data.
 
-- Demonstrate role-based document access
-- Use mock document classification labels
-- Block basic prompt injection attempts
-- Detect secret-like or sensitive-data patterns
-- Log prompt events locally
-- Log retrieval and access decisions locally
-- Simulate human review triggers for high-risk prompts
-- Avoid all paid cloud services and external AI APIs
+The prototype uses Python, mock users, mock documents, document metadata, and local JSONL logs.
 
-### Planned Phase 2 Components
+## Security Controls Demonstrated
 
-- `local_prototype/app.py`
-- `local_prototype/sample_users.json`
-- `local_prototype/sample_docs/`
-- `local_prototype/metadata/document_metadata.json`
-- `local_prototype/logs/`
-- `local_prototype/tests/`
+The prototype demonstrates:
 
-### Phase 2 Cost Statement
+- Mock user identity and role context
+- Role- and group-based document authorization
+- Document status and classification checks
+- Prompt injection detection
+- Sensitive-data and secret-pattern detection
+- Prompt risk scoring
+- Blocking high-risk requests before document retrieval
+- Authorized and denied document retrieval decisions
+- Prompt event logging
+- Retrieval event logging
+- Access decision logging
+- Security alert logging
+- Simulated human-review triggers
+- Advisory-only response behavior
 
-Phase 2 will remain local-first and cost-safe.
+## Request Flow
 
-No AWS, Azure, GCP, OCI, OpenAI API, Bedrock, Azure OpenAI, SageMaker, OpenSearch, Kendra, or paid cloud services are required.
+A request follows this simplified control path:
 
-Estimated cost: $0.
+**Mock User → Prompt Risk Evaluation → Policy Decision → Document Retrieval → Authorization Check → Logging → Advisory Response**
 
-### Phase 2 Status
+A high-risk prompt can be stopped before retrieval occurs.
 
-Planned.
+For requests that proceed to retrieval, document access is evaluated using the user's role and groups together with document metadata.
+
+This was important to the larger architecture because the AI interaction should not become a way around existing authorization boundaries.
+
+## Prototype Components
+
+```text
+Phase_2/
+└── local_prototype/
+    ├── app.py
+    ├── requirements.txt
+    ├── sample_users.json
+    ├── sample_docs/
+    ├── metadata/
+    │   └── document_metadata.json
+    ├── logs/
+    ├── tests/
+    ├── prototype_results.md
+    └── readme_runbook.md
