@@ -2,108 +2,94 @@
 
 ## Purpose
 
-This document identifies the trust boundaries in the secure enterprise AI assistant architecture.
+This document identifies the major trust boundaries in the secure enterprise AI assistant reference architecture.
 
-A trust boundary is a point where data, identity, permissions, or control passes between different systems, roles, components, or security contexts.
+A trust boundary exists where data, identity, permissions, or control passes between different systems, roles, components, or security contexts.
 
-Trust boundaries are especially important for AI assistants because user prompts, retrieved documents, model context, generated responses, logs, and access decisions move across multiple layers.
+Trust boundaries are especially important for AI/RAG systems because user prompts, retrieved documents, model context, generated responses, logs, and access decisions move through components with different levels of trust.
 
-The goal of this document is to identify where security controls must be enforced so the AI assistant does not expose unauthorized data, follow malicious instructions, bypass access controls, or make unsupported decisions.
+The objective is to identify where controls must be enforced so the AI assistant does not create a new path around existing enterprise security, authorization, data-governance, or accountability boundaries.
 
-## Scope
-
-This document applies to the following architecture components:
-
-- User interface
-- Identity provider
-- Access control layer
-- Prompt handling layer
-- Retrieval layer
-- Approved knowledge base
-- AI model or LLM interface
-- Response validation layer
-- Logging and monitoring layer
-- Human review workflow
-- Administrative functions
-- Future cloud reference designs
+This document describes a production-oriented reference architecture. The project also includes a limited local prototype that validates selected trust-boundary and security-control concepts.
 
 ## Core Principle
 
-The AI model should not be treated as a trusted security boundary.
+> The AI model is not the security boundary.
 
-The model may generate useful responses, but it should not be responsible for deciding:
+The model may generate useful responses, but it should not be responsible for determining:
 
 - Who the user is
-- What documents the user can access
-- Whether sensitive data may be disclosed
-- Whether a request is approved
+- What documents the user may access
+- Whether sensitive information may be disclosed
 - Whether a security exception is valid
-- Whether compliance requirements can be bypassed
-- Whether production actions should be taken
+- Whether a compliance requirement may be bypassed
+- Whether a high-impact action is approved
+- Whether production changes should occur
 
-Security decisions must be enforced by trusted application logic, identity systems, access control policies, document metadata, logging, and human review.
+Those decisions belong in identity systems, authorization controls, application logic, document governance, monitoring, and appropriate human-review processes.
 
-## High-Level Trust Boundary Summary
+## High-Level Trust Boundaries
 
-| Trust Boundary | Description | Primary Risk |
-|---|---|---|
-| User to AI Assistant | User submits prompts through the interface | Malicious input, prompt injection, sensitive data entry |
-| AI Assistant to Identity Provider | Application validates user identity and roles | Spoofing, stale access, role mismatch |
-| Prompt Handling to Retrieval Layer | User prompt is converted into a document search request | Retrieval manipulation, broad search, role bypass |
-| Retrieval Layer to Knowledge Base | System searches approved document repositories | Unauthorized document access, misclassification |
-| Knowledge Base to Model Context | Retrieved content is assembled for the model | Excessive context, restricted content exposure |
-| AI Assistant to Model | Prompt and context are sent to the model | Data leakage, provider exposure, model manipulation |
-| Model to Response Validation | Generated output is checked before release | Sensitive output, hallucination, unsafe advice |
-| Response Validation to User | Final response is displayed | Unauthorized disclosure, overreliance |
-| AI Assistant to Logging Layer | Activity is recorded for audit and monitoring | Overlogging, underlogging, log tampering |
-| AI Assistant to Human Reviewer | High-risk output is escalated for review | Missing review, unclear accountability |
-| Administrator to AI Configuration | Admin changes system settings | Misconfiguration, privilege abuse |
-| Document Owner to Knowledge Base | Documents are approved and ingested | Poisoned content, stale documents, wrong classification |
+| Trust Boundary | Primary Concern |
+| --- | --- |
+| User → AI Assistant | Malicious input, prompt injection, sensitive-data entry |
+| AI Assistant → Identity Provider | Spoofing, stale access, manipulated identity context |
+| Prompt Handling → Retrieval | Retrieval manipulation, excessive scope, authorization bypass |
+| Retrieval → Knowledge Base | Unauthorized, stale, poisoned, or misclassified content |
+| Knowledge Base → Model Context | Restricted content exposure and context injection |
+| AI Assistant → Model | Provider exposure, retention, model manipulation |
+| Model → Response Validation | Sensitive, unsupported, or unsafe output |
+| Response Validation → User | Unauthorized disclosure and overreliance |
+| AI Assistant → Logging | Sensitive logs, missing evidence, tampering |
+| AI Assistant → Human Review | Review bypass and unclear accountability |
+| Administrator → AI Configuration | Misconfiguration and privilege abuse |
+| Document Owner → Knowledge Base | Poisoned, stale, or incorrectly classified content |
 
 ---
 
-# Boundary 1: User to AI Assistant Interface
+# Boundary 1: User to AI Assistant
 
 ## Description
 
-This boundary exists where the user interacts with the AI assistant through a web interface, chat interface, internal portal, or local prototype interface.
+This boundary exists where a user submits information to the AI assistant.
 
-The user is outside the trusted application logic. User input must be treated as untrusted.
+The user is outside the trusted application logic. User input must therefore be treated as untrusted.
 
 ## Data Crossing the Boundary
 
+Examples include:
+
 - User prompt
-- User session information
+- Session information
 - Uploaded or pasted content
-- Source IP or device metadata, if available
-- User-selected role in local prototype scenarios
+- Device or network context where appropriate
+- Request metadata
 
 ## Key Risks
 
-| Risk | Description |
-|---|---|
-| Prompt Injection | User attempts to override instructions or bypass controls |
-| Sensitive Data Entry | User enters customer data, secrets, credentials, or regulated data |
-| Role Impersonation | User claims to be a privileged user in the prompt |
-| Broad Data Request | User asks to search everything or retrieve restricted documents |
-| Logging Evasion | User asks the assistant not to log the request |
-| Unsafe Intent | User asks for bypass procedures, harmful guidance, or unauthorized access |
+- Prompt injection
+- Sensitive-data entry
+- Attempts to impersonate privileged roles
+- Requests for excessive or restricted information
+- Attempts to bypass logging or policy
+- Unsafe or unauthorized requests
 
-## Required Controls
+## Controls
 
-| Control | Description |
-|---|---|
-| Authentication | Require authenticated access for enterprise deployment |
-| Input Validation | Check for unsafe or suspicious prompt patterns |
-| Prompt Injection Detection | Flag phrases that attempt instruction override |
-| Sensitive Data Detection | Detect secrets, credentials, personal data, or regulated data |
-| Rate Limiting | Limit abusive or automated prompt submissions |
-| Acceptable Use Notice | Inform users about approved and prohibited uses |
-| Logging | Record prompt metadata and policy decision |
+Controls may include:
+
+- Enterprise authentication
+- Input validation
+- Prompt-risk evaluation
+- Prompt injection detection
+- Sensitive-data detection
+- Rate limiting
+- Acceptable-use enforcement
+- Request logging
 
 ## Security Decision
 
-User input should never be trusted as an instruction to bypass policy.
+User input should never be trusted as an instruction to bypass security policy.
 
 ---
 
@@ -111,11 +97,13 @@ User input should never be trusted as an instruction to bypass policy.
 
 ## Description
 
-This boundary exists where the AI assistant validates user identity, group membership, authentication status, and role information.
+This boundary establishes trusted user identity and the attributes required for authorization decisions.
 
-In an enterprise deployment, this may involve Microsoft Entra ID, Okta, Ping Identity, AWS IAM Identity Center, or another SSO provider.
+Possible identity platforms include Microsoft Entra ID, Okta, Ping Identity, AWS IAM Identity Center, or another approved enterprise identity provider.
 
 ## Data Crossing the Boundary
+
+Examples include:
 
 - User identity
 - Authentication status
@@ -123,80 +111,80 @@ In an enterprise deployment, this may involve Microsoft Entra ID, Okta, Ping Ide
 - Role assignments
 - MFA status
 - Session claims
-- Conditional access context
+- Conditional-access context
 
 ## Key Risks
 
-| Risk | Description |
-|---|---|
-| Spoofed Identity | Attacker impersonates another user |
-| Stale Access | User retains access after role change or termination |
-| Role Claim Manipulation | Application trusts user-provided role claims |
-| Weak Authentication | Access granted without MFA or strong authentication |
-| Session Hijacking | Attacker reuses a valid user session |
+- Identity spoofing
+- Stale access after role changes
+- Manipulated role claims
+- Weak authentication
+- Session hijacking
+- Excessive privileges
 
-## Required Controls
+## Controls
 
-| Control | Description |
-|---|---|
-| SSO Integration | Use trusted enterprise identity source |
-| MFA | Require multi-factor authentication |
-| Server-Side Role Validation | Validate role and group membership server-side |
-| Session Timeout | Expire inactive sessions |
-| Lifecycle Integration | Remove access when user changes role or leaves |
-| Conditional Access | Apply device, network, or risk-based rules if required |
-| Identity Logging | Log user ID and authentication context |
+Controls may include:
+
+- Enterprise SSO
+- MFA
+- Server-side identity validation
+- Session management
+- Identity lifecycle integration
+- Conditional access
+- Identity-event logging
 
 ## Security Decision
 
-The assistant should trust only identity attributes from approved identity systems, not claims made in prompts.
+The assistant should trust identity attributes from approved identity systems rather than identity or privilege claims contained in a user prompt.
+
+Authentication establishes identity. Authorization still determines what the authenticated user may access.
 
 ---
 
-# Boundary 3: Prompt Handling Layer to Retrieval Layer
+# Boundary 3: Prompt Handling to Retrieval
 
 ## Description
 
-This boundary exists where the user prompt is transformed into a retrieval query.
+This boundary exists where user intent is translated into a retrieval request.
 
-This is a critical AI security boundary because prompt injection may attempt to influence what documents are searched or retrieved.
+It is a significant security boundary because malicious or overly broad prompts may attempt to influence what information is searched or returned.
 
 ## Data Crossing the Boundary
 
-- Sanitized prompt
-- Search query
-- User role
-- User group membership
-- Prompt risk score
+Examples include:
+
+- User query
+- Prompt-risk result
+- User role or group context
 - Retrieval scope
-- Data classification filters
+- Classification constraints
 - Authorization metadata
 
 ## Key Risks
 
-| Risk | Description |
-|---|---|
-| Retrieval Manipulation | User tries to force retrieval of restricted documents |
-| Broad Search Abuse | User asks the assistant to search all repositories |
-| Prompt Injection | User attempts to bypass retrieval filters |
-| Role Bypass | Prompt claims higher access than identity provider confirms |
-| Sensitive Query Terms | Prompt includes regulated or secret data |
+- Retrieval manipulation
+- Broad search abuse
+- Prompt injection
+- Role or authorization bypass
+- Sensitive-data exposure
+- Requests for unauthorized collections
 
-## Required Controls
+## Controls
 
-| Control | Description |
-|---|---|
-| Query Sanitization | Remove or flag unsafe instructions |
-| Retrieval Scope Enforcement | Search only approved collections |
-| Role-Based Filtering | Restrict retrieval based on user role |
-| Metadata-Based Filtering | Filter by classification, status, owner, and approval |
-| Deny-by-Default | Deny retrieval if metadata is missing |
-| Risk-Based Routing | Escalate or block high-risk prompts |
-| Retrieval Logging | Log search scope, filters, and document IDs |
+Controls may include:
+
+- Prompt-risk evaluation
+- Retrieval-scope enforcement
+- Role- or attribute-based restrictions
+- Metadata filtering
+- Deny-by-default behavior
+- Risk-based blocking or escalation
+- Retrieval-event logging
 
 ## Security Decision
 
-The retrieval layer should receive only an authorized and scoped query, not an unrestricted user prompt.
+The retrieval process should operate within an authorized scope rather than treating the user's raw request as authority to search unrestricted enterprise information.
 
 ---
 
@@ -204,48 +192,51 @@ The retrieval layer should receive only an authorized and scoped query, not an u
 
 ## Description
 
-This boundary exists where the retrieval layer queries the approved knowledge base, vector index, search index, or document repository.
+This boundary exists where the retrieval layer searches approved repositories, indexes, or knowledge sources.
 
-The knowledge base must be treated as controlled but not automatically trusted. It may contain stale, misclassified, or poisoned content if governance fails.
+An approved repository should be treated as controlled, but its individual contents should not automatically be trusted. Documents may become stale, misclassified, malicious, or inappropriate for AI use.
 
 ## Data Crossing the Boundary
 
+Examples include:
+
 - Retrieval query
 - Metadata filters
-- User access attributes
+- User authorization attributes
 - Document IDs
-- Document chunks
-- Embeddings or vector search results
+- Document content or chunks
 - Classification labels
 - Source metadata
+- Embedding or index results in a production RAG implementation
 
 ## Key Risks
 
-| Risk | Description |
-|---|---|
-| Unauthorized Retrieval | User retrieves documents outside approved access |
-| Misclassified Document | Sensitive document is labeled too broadly |
-| Poisoned Document | Malicious instructions are embedded in source content |
-| Stale Document | Expired or deprecated content is retrieved |
-| Cross-Role Leakage | Content intended for one role is shown to another |
-| Vector Leakage | Embeddings expose sensitive content or retrieval patterns |
+- Unauthorized retrieval
+- Misclassified documents
+- Poisoned content
+- Stale or deprecated content
+- Cross-role information leakage
+- Sensitive embedding or index exposure
 
-## Required Controls
+## Controls
 
-| Control | Description |
-|---|---|
-| Document Classification | Every document must have a sensitivity label |
-| Data Owner Approval | Documents require owner approval before ingestion |
-| Metadata Filtering | Enforce role, group, classification, status, and expiration filters |
-| Document-Level Authorization | Check access before content is returned |
-| Approved Sources Only | Ingest from approved repositories only |
-| Content Review | Review for malicious instructions or sensitive data |
-| Reindexing Controls | Remove deprecated or unauthorized content from indexes |
-| Retrieval Audit Logs | Log what was retrieved or denied |
+Controls may include:
+
+- Document classification
+- Data-owner approval
+- Approval status
+- Authorization metadata
+- Document-level authorization
+- Approved-source restrictions
+- Lifecycle management
+- Content review
+- Retrieval audit logging
 
 ## Security Decision
 
-Documents should not be retrievable unless they are classified, approved, current, and authorized for the user.
+Relevant information is not automatically authorized information.
+
+Documents should only be returned when applicable governance and authorization requirements have been satisfied.
 
 ---
 
@@ -253,286 +244,298 @@ Documents should not be retrievable unless they are classified, approved, curren
 
 ## Description
 
-This boundary exists where retrieved document excerpts are assembled into the context sent to the AI model.
+This boundary exists where retrieved content is assembled into the context provided to the AI model.
 
-This is a major RAG security boundary because the model can only respond based on the context it receives.
+Retrieved documents should be treated as untrusted input because they may contain malicious instructions, outdated information, excessive sensitive content, or text that conflicts with system policy.
 
 ## Data Crossing the Boundary
 
-- Retrieved document excerpts
+Examples include:
+
+- Authorized document excerpts
 - Document metadata
 - Source references
 - User prompt
 - System instructions
-- Role constraints
-- Data classification labels
+- Classification information
+- Security constraints
 
 ## Key Risks
 
-| Risk | Description |
-|---|---|
-| Excessive Context | Too much content is sent to the model |
-| Restricted Context Exposure | Unauthorized content enters model context |
-| Context Injection | Malicious document text is treated as instruction |
-| Missing Source Metadata | Response cannot be traced to source documents |
-| Mixed Classification Context | Internal and restricted content are combined inappropriately |
-| Sensitive Data Transfer | Confidential or regulated data is sent to model provider |
+- Excessive context
+- Unauthorized content entering model context
+- Indirect prompt injection
+- Missing source metadata
+- Inappropriate mixing of sensitivity levels
+- Sensitive information sent to an external provider
 
-## Required Controls
+## Controls
 
-| Control | Description |
-|---|---|
-| Context Minimization | Send only necessary excerpts |
-| Metadata Preservation | Include source ID, version, and classification |
-| Context Isolation | Mark retrieved content as reference material, not instructions |
-| Authorization Recheck | Reconfirm document access before context assembly |
-| Classification-Aware Context | Prevent inappropriate mixing of sensitivity levels |
-| Sensitive Data Scan | Scan context before model interaction |
-| Source Traceability | Preserve source references for response and logs |
+Controls may include:
+
+- Context minimization
+- Metadata preservation
+- Context isolation
+- Authorization verification
+- Classification-aware context handling
+- Sensitive-data evaluation
+- Source traceability
 
 ## Security Decision
 
-Only authorized, minimized, source-traceable content should be placed into model context.
+Only authorized and appropriately minimized content should enter model context.
+
+Retrieved content should be treated as reference material rather than trusted instructions.
 
 ---
 
-# Boundary 6: AI Assistant to AI Model or LLM Interface
+# Boundary 6: AI Assistant to AI Model
 
 ## Description
 
-This boundary exists where the AI assistant sends prompts and context to the AI model.
+This boundary exists when the application sends instructions, user input, and authorized context to an AI model.
 
-In the local prototype, this may be a local model or mocked response. In a future cloud deployment, this could be AWS Bedrock, Azure OpenAI, OpenAI API, or another provider.
+The implemented local prototype does not invoke an LLM. It generates a simplified advisory response from authorized local document content so selected security-control concepts can be tested without introducing a model dependency.
 
-## Data Crossing the Boundary
+A production implementation could use AWS Bedrock, Azure OpenAI, a private model platform, or another approved provider.
 
-- System prompt
+## Data Crossing the Boundary in a Production Implementation
+
+Examples may include:
+
+- System instructions
 - User prompt
-- Retrieved context
-- Metadata
+- Authorized retrieved context
+- Source metadata
 - Model parameters
 - Request identifiers
-- Response output
+- Generated output
 
 ## Key Risks
 
-| Risk | Description |
-|---|---|
-| Provider Data Exposure | Prompts or context are sent to third-party service |
-| Model Retention | Provider stores prompts or responses |
-| Training Risk | Provider uses enterprise data for model training |
-| Prompt Injection Execution | Model follows malicious prompt instructions |
-| System Prompt Leakage | Model reveals hidden instructions |
-| Model Misconfiguration | Wrong model or unsafe settings are used |
-| Availability Dependency | External model outage affects service |
+- Provider data exposure
+- Provider retention
+- Enterprise data used for training
+- Prompt injection affecting model behavior
+- System-instruction leakage
+- Model misconfiguration
+- Model or provider availability dependency
 
-## Required Controls
+## Controls
 
-| Control | Description |
-|---|---|
-| Local-First Prototype | Use local or mocked model behavior for initial phase |
-| Provider Review | Review provider data handling before cloud use |
-| No Sensitive Data in Prototype | Do not send real sensitive data to any model |
-| System Prompt Hardening | Define safe assistant behavior |
-| Externalized Enforcement | Enforce critical controls outside the model |
-| Model Version Tracking | Track model/provider/version |
-| Request Logging | Log metadata without overlogging sensitive content |
-| Kill Switch | Ability to disable model calls if risk is detected |
+Controls may include:
+
+- Provider security and data-handling review
+- Model and version governance
+- System-instruction protection
+- Externalized security enforcement
+- Data minimization
+- Request metadata logging
+- Controlled external connectivity
+- Ability to disable model calls
+- No real sensitive data in test environments without explicit approval
 
 ## Security Decision
 
-The model should be treated as an untrusted reasoning component, not as a security enforcement point.
+The model should be treated as an untrusted reasoning component rather than a security-enforcement point.
 
 ---
 
-# Boundary 7: Model Output to Response Validation Layer
+# Boundary 7: Model Output to Response Validation
 
 ## Description
 
-This boundary exists where the AI-generated response is checked before the user sees it.
+This boundary exists where AI-generated output is evaluated before it is released to the user.
 
-Model output must be treated as untrusted until validated.
+Model output should be treated as untrusted until applicable response controls have been satisfied.
 
 ## Data Crossing the Boundary
+
+Examples include:
 
 - Generated response
 - Source references
 - Response metadata
-- Risk score
+- Risk indicators
 - Detected sensitive content
 - Unsupported claims
-- Human review flags
+- Human-review indicators
 
 ## Key Risks
 
-| Risk | Description |
-|---|---|
-| Sensitive Output | Response includes confidential, restricted, regulated, or secret data |
-| Hallucination | Model generates unsupported or incorrect information |
-| Unsafe Recommendation | Response suggests bypassing controls or taking risky action |
-| Final Approval Language | Response incorrectly approves exceptions, access, or changes |
-| Missing Sources | Response lacks citation to approved documents |
-| Prompt Leakage | Response exposes system instructions or hidden rules |
+- Sensitive information disclosure
+- Hallucinated or unsupported information
+- Unsafe recommendations
+- Inappropriate approval language
+- Missing source support
+- System-instruction leakage
 
-## Required Controls
+## Controls
 
-| Control | Description |
-|---|---|
-| Output Validation | Check for sensitive content, unsupported claims, and unsafe advice |
-| Source Citation Requirement | Require source references for factual claims |
-| Redaction | Remove sensitive content when appropriate |
-| Block Rules | Block prohibited outputs |
-| Human Review Routing | Escalate high-risk responses |
-| Advisory Language | Clarify that AI output is not final approval |
-| Response Logging | Log response metadata and policy action |
+Depending on the use case, controls may include:
+
+- Output validation
+- Sensitive-data detection
+- Source traceability
+- Unsupported-claim detection
+- Redaction
+- Output blocking
+- Human-review routing
+- Advisory language
+- Response-event logging
 
 ## Security Decision
 
-AI output should not be displayed until it passes validation or human review.
+AI output should not be displayed until applicable response-validation controls have been satisfied.
+
+Human review should be required when defined risk, consequence, or governance criteria are met.
 
 ---
 
-# Boundary 8: Response Validation Layer to User
+# Boundary 8: Response Validation to User
 
 ## Description
 
-This boundary exists where the final response is returned to the user.
+This boundary exists where the final response is presented to the user.
 
-Even after validation, the response must be framed appropriately so users understand its limitations.
+Even an authorized response can create risk if the user misunderstands its authority or limitations.
 
 ## Data Crossing the Boundary
 
+Examples include:
+
 - Final response
 - Source references
-- Disclaimers
+- Warnings
 - Refusal messages
-- Human review instructions
+- Human-review instructions
 - Escalation guidance
 
 ## Key Risks
 
-| Risk | Description |
-|---|---|
-| Overreliance | User treats advisory output as final approval |
-| Misinterpretation | User misunderstands limitations or context |
-| Unauthorized Disclosure | Validation fails and restricted content is shown |
-| Lack of Traceability | User cannot see source support |
-| Unsafe Action | User acts on AI-generated recommendation without review |
+- Overreliance
+- Misinterpretation
+- Unauthorized disclosure
+- Lack of traceability
+- Unsafe action based on AI-generated advice
 
-## Required Controls
+## Controls
 
-| Control | Description |
-|---|---|
-| Source References | Show sources where appropriate |
-| Advisory-Only Wording | Avoid final approval language |
-| Refusal Messaging | Clearly explain blocked or restricted requests |
-| Escalation Instructions | Direct user to proper owner or process |
-| User Training | Train users on approved AI use |
-| Feedback Mechanism | Allow users to report incorrect or unsafe responses |
+Controls may include:
+
+- Source references
+- Advisory wording
+- Refusal messaging
+- Escalation instructions
+- User training
+- Feedback mechanisms
 
 ## Security Decision
 
-The user should receive only authorized, validated, appropriately framed responses.
+The user should receive only authorized, appropriately validated, and properly framed information.
 
 ---
 
-# Boundary 9: AI Assistant to Logging and Monitoring Layer
+# Boundary 9: AI Assistant to Logging and Monitoring
 
 ## Description
 
-This boundary exists where the assistant sends security, usage, retrieval, and response metadata to logging and monitoring systems.
+This boundary exists where the system records security, usage, retrieval, authorization, and response events.
 
-Logs are sensitive because they may contain user behavior, document references, risk scores, and possibly prompt or response content.
+Logs are themselves sensitive assets because they may contain information about users, requests, documents, risk decisions, and system behavior.
 
 ## Data Crossing the Boundary
 
+Examples include:
+
 - User ID
-- Prompt metadata
-- Prompt risk score
+- Timestamp
+- Correlation ID
+- Prompt-risk metadata
 - Access decisions
-- Retrieved document IDs
+- Retrieved and denied document IDs
 - Response metadata
-- Human review events
-- Admin actions
+- Human-review events
+- Administrative actions
 - Security alerts
-- Cost and usage metrics
+- Usage or cost information
 
 ## Key Risks
 
-| Risk | Description |
-|---|---|
-| Overlogging | Logs store sensitive prompt or response content |
-| Underlogging | Incident investigation lacks evidence |
-| Log Tampering | Admin or attacker alters evidence |
-| Excessive Log Access | Too many users can view sensitive logs |
-| Missing Correlation | Prompt, retrieval, response, and review events cannot be linked |
-| Logging Cost | Excessive logs increase storage or SIEM cost |
+- Overlogging sensitive information
+- Insufficient evidence
+- Log tampering
+- Excessive log access
+- Missing event correlation
+- Excessive logging cost
 
-## Required Controls
+## Controls
 
-| Control | Description |
-|---|---|
-| Structured Logging | Use consistent event fields |
-| Log Minimization | Avoid full prompt/response logging by default |
-| Redaction | Remove secrets and sensitive data |
-| Log Access Control | Restrict log access by role |
-| Immutable or Protected Logs | Protect evidence from tampering |
-| Correlation IDs | Link workflow events |
-| Retention Policy | Define retention by log type |
-| Monitoring Alerts | Alert on high-risk activity |
+Controls may include:
+
+- Structured logging
+- Data minimization
+- Redaction
+- Role-based log access
+- Protected or immutable logging
+- Correlation IDs
+- Retention policies
+- Monitoring and alerting
 
 ## Security Decision
 
-Logs should provide investigation value without becoming a secondary source of sensitive data exposure.
+Logging should provide sufficient evidence for investigation and audit without becoming a secondary source of sensitive-data exposure.
 
 ---
 
-# Boundary 10: AI Assistant to Human Review Workflow
+# Boundary 10: AI Assistant to Human Review
 
 ## Description
 
-This boundary exists when high-risk prompts or responses are routed to a human reviewer.
+This boundary exists when defined risk or consequence requires human involvement.
 
-This boundary helps preserve accountability for decisions that AI should not make independently.
+Human review preserves accountability for decisions that should not be delegated entirely to an AI system.
 
 ## Data Crossing the Boundary
 
-- Prompt metadata
+Examples may include:
+
+- Request metadata
 - Response draft
-- Source document IDs
-- Risk score
+- Source references
+- Risk information
 - Escalation reason
-- User role
-- Data classification
+- User context
+- Classification
 - Review decision
 - Reviewer notes
 
 ## Key Risks
 
-| Risk | Description |
-|---|---|
-| Review Bypass | High-risk response is released without review |
-| Wrong Reviewer | Request is routed to unqualified or unauthorized reviewer |
-| Insufficient Evidence | Reviewer cannot evaluate the response |
-| Rubber-Stamp Approval | Review occurs without meaningful validation |
-| Sensitive Review Notes | Review records expose sensitive information |
-| Slow Review | Delays create operational bottlenecks |
+- Review bypass
+- Routing to an inappropriate reviewer
+- Insufficient evidence
+- Rubber-stamp approval
+- Sensitive review records
+- Operational delay
 
-## Required Controls
+## Controls
 
-| Control | Description |
-|---|---|
-| Review Trigger Rules | Define when review is required |
-| Reviewer Assignment | Route to proper role such as IAM, compliance, legal, or security |
-| Review Evidence Package | Provide prompt, response, source, and risk metadata |
-| Review Decision Logging | Record approval, rejection, escalation, or edits |
-| SLA Guidance | Define expected review timeframes |
-| Access-Controlled Review Records | Restrict reviewer logs and notes |
-| Escalation Path | Escalate critical events quickly |
+Controls may include:
+
+- Defined review triggers
+- Qualified reviewer assignment
+- Review evidence package
+- Review-decision logging
+- Appropriate service expectations
+- Access-controlled review records
+- Escalation paths
 
 ## Security Decision
 
-High-risk decisions must remain accountable to human owners.
+Human review should be tied to the consequence and risk of the decision.
+
+The implemented local prototype simulates review triggers but does not implement a production approval gate.
 
 ---
 
@@ -540,48 +543,48 @@ High-risk decisions must remain accountable to human owners.
 
 ## Description
 
-This boundary exists where administrators manage the AI assistant configuration, model settings, access rules, logging settings, guardrails, system prompts, indexes, and integrations.
+This boundary exists where administrators manage system configuration, model settings, access rules, logging, guardrails, prompts, indexes, and integrations.
 
-Administrative access is powerful and must be separated from ordinary user access.
+Administrative access is powerful but should remain distinct from authorization to enterprise content.
 
 ## Data Crossing the Boundary
 
+Examples include:
+
 - Configuration changes
-- Access policy updates
-- System prompt changes
-- Model provider settings
-- Retrieval index settings
+- Access-policy updates
+- System-instruction changes
+- Model settings
+- Retrieval configuration
 - Logging configuration
 - Guardrail rules
-- Document ingestion settings
+- Integration settings
 
 ## Key Risks
 
-| Risk | Description |
-|---|---|
-| Misconfiguration | Admin weakens access controls or guardrails |
-| Privilege Abuse | Admin accesses restricted content unnecessarily |
-| Unapproved Model Change | System uses wrong or unreviewed model |
-| Logging Disabled | Audit and monitoring are weakened |
-| Insecure Prompt Change | System prompt exposes sensitive details |
-| Unapproved Integration | AI assistant connects to risky tool or provider |
+- Misconfiguration
+- Privilege abuse
+- Unauthorized model changes
+- Logging disabled or weakened
+- Unsafe configuration changes
+- Unapproved integrations
 
-## Required Controls
+## Controls
 
-| Control | Description |
-|---|---|
-| Privileged Access Management | Restrict admin roles |
-| MFA | Require MFA for administrative access |
-| Change Management | Approve and document changes |
-| Separation of Duties | Admin access does not automatically grant content access |
-| Admin Logging | Log all administrative changes |
-| Configuration Review | Periodically review system settings |
-| Emergency Rollback | Ability to revert unsafe changes |
-| Least Privilege | Admin rights granted only as needed |
+Controls may include:
+
+- Privileged-access management
+- MFA
+- Change management
+- Separation of duties
+- Administrative logging
+- Configuration review
+- Emergency rollback
+- Least privilege
 
 ## Security Decision
 
-Administrative functions must be tightly controlled, logged, and separated from document content access.
+Administrative control over the AI platform should not automatically provide access to restricted enterprise information.
 
 ---
 
@@ -589,149 +592,191 @@ Administrative functions must be tightly controlled, logged, and separated from 
 
 ## Description
 
-This boundary exists where documents are approved, classified, updated, ingested, deprecated, or removed from the knowledge base.
+This boundary exists where information is approved, classified, updated, ingested, deprecated, or removed from AI-accessible knowledge sources.
 
-This boundary is important because RAG systems are only as trustworthy as the content they retrieve.
+Document ingestion is a governance process, not simply a technical indexing process.
 
 ## Data Crossing the Boundary
+
+Examples include:
 
 - Source documents
 - Document metadata
 - Classification labels
-- Owner approvals
-- Version history
-- Expiration dates
-- Ingestion decisions
-- Review decisions
+- Owner approval
+- Version information
+- Review dates
+- Expiration information
+- Ingestion and removal decisions
 
 ## Key Risks
 
-| Risk | Description |
-|---|---|
-| Poisoned Content | Malicious or misleading content is ingested |
-| Stale Content | Outdated guidance remains searchable |
-| Misclassification | Sensitive content is labeled too broadly |
-| Unapproved Documents | Drafts or unofficial documents are used |
-| Missing Owner | No one is accountable for content accuracy |
-| Excessive Scope | Too many repositories are indexed |
+- Poisoned content
+- Stale information
+- Misclassification
+- Unapproved documents
+- Missing ownership
+- Excessive repository scope
 
-## Required Controls
+## Controls
 
-| Control | Description |
-|---|---|
-| Data Owner Approval | Owner must approve ingestion |
-| Classification Review | Document must be classified before ingestion |
-| Status Check | Only approved documents should be indexed |
-| Expiration Date | Documents should be reviewed periodically |
-| Content Scanning | Check for secrets, regulated data, and malicious instructions |
-| Source Control | Ingest only from approved repositories |
-| Version Tracking | Preserve document version and review history |
-| Removal Process | Remove deprecated or unsafe documents quickly |
+Controls may include:
+
+- Data-owner approval
+- Classification review
+- Approval status
+- Lifecycle management
+- Content scanning
+- Approved-source restrictions
+- Version tracking
+- Removal processes
 
 ## Security Decision
 
-Document ingestion is a governance process, not only a technical indexing process.
+Only appropriately governed information should become available to the AI retrieval process.
 
 ---
 
-# Trust Boundary Risk Matrix
+# Trust Boundary Risk Summary
 
-| Boundary | Risk Level | Main Concern | Primary Control |
-|---|---|---|---|
-| User to AI Assistant | High | Prompt injection and sensitive data entry | Input filtering and authentication |
-| AI Assistant to Identity Provider | High | Spoofing and stale access | SSO, MFA, lifecycle integration |
-| Prompt Handling to Retrieval | High | Retrieval manipulation | Scoped queries and metadata filtering |
-| Retrieval to Knowledge Base | High | Unauthorized document retrieval | Document-level authorization |
-| Knowledge Base to Context | High | Restricted content exposure | Context minimization and recheck |
-| AI Assistant to Model | High | Data/provider exposure | Local-first and provider review |
-| Model to Response Validation | High | Unsafe or sensitive output | Output validation |
-| Response to User | Medium | Overreliance and disclosure | Source references and advisory language |
-| Assistant to Logging | High | Sensitive logs or missing evidence | Log minimization and protected logs |
-| Assistant to Human Review | Medium | Review bypass | Review trigger rules |
-| Admin to Configuration | High | Misconfiguration or privilege abuse | Privileged access and change control |
-| Document Owner to Knowledge Base | High | Poisoned or misclassified content | Owner approval and classification |
+| Boundary | Risk Level | Primary Concern |
+| --- | --- | --- |
+| User → AI Assistant | High | Prompt injection and sensitive-data entry |
+| AI Assistant → Identity Provider | High | Spoofing and stale access |
+| Prompt Handling → Retrieval | High | Retrieval manipulation |
+| Retrieval → Knowledge Base | High | Unauthorized document retrieval |
+| Knowledge Base → Model Context | High | Restricted or malicious context |
+| AI Assistant → Model | High | Provider and model exposure |
+| Model → Response Validation | High | Sensitive or unsafe output |
+| Response Validation → User | Medium | Disclosure and overreliance |
+| AI Assistant → Logging | High | Sensitive logs or missing evidence |
+| AI Assistant → Human Review | Medium | Review bypass |
+| Administrator → Configuration | High | Misconfiguration or privilege abuse |
+| Document Owner → Knowledge Base | High | Poisoned or misclassified content |
 
-## Local Prototype Trust Boundaries
+Risk levels are illustrative for this scenario. A production risk assessment would need to consider the organization's data, implementation, threat model, regulatory obligations, and business impact.
 
-The local prototype should simplify the architecture while preserving the same control concepts.
+# Local Prototype Trust Boundaries
+
+The implemented local Python prototype simplifies the production architecture while preserving selected trust-boundary concepts.
+
+It does not implement:
+
+- Enterprise authentication
+- Production identity-provider integration
+- An LLM
+- Embeddings
+- Vector search
+- A vector database
+- Cloud AI services
+- Production response validation
+- Production human-review workflow
+- Enterprise SIEM integration
 
 ## Local Prototype Components
 
 | Component | Trust Boundary Concern |
-|---|---|
-| Mock User Role Selection | User-selected roles are not trusted in real systems |
-| Local Prompt Input | Prompt injection and sensitive data entry |
-| Local Document Folder | Mock document classification and access rules |
-| Local Retrieval Logic | Role-based filtering |
-| Local Response Generator | Advisory response only |
-| Local Logs | Prompt and retrieval metadata |
-| Mock Human Review | Simulated review triggers |
+| --- | --- |
+| Mock User Context | Mock roles and groups represent identity context but are not production authentication |
+| Local Prompt Input | User input remains untrusted |
+| Prompt Risk Logic | Pattern-based detection determines whether a request proceeds |
+| Local Document Repository | Synthetic documents still require metadata and access controls |
+| Local Retrieval Logic | Relevant documents must pass authorization checks |
+| Document Metadata | Role, group, classification, status, and ownership support access decisions |
+| Local Response Generator | Produces advisory output from authorized content without an LLM |
+| Local JSONL Logs | Security evidence is recorded locally |
+| Simulated Human Review | Review-required documents can generate a review event |
 
-## Local Prototype Controls
+## Local Prototype Control Flow
 
-| Control | Description |
-|---|---|
-| Mock Roles | Simulate general employee, engineer, security architect, IAM analyst, and compliance analyst |
-| Mock Documents | Use synthetic documents only |
-| Classification Labels | Assign internal, confidential, restricted, or prohibited labels |
-| Prompt Filters | Detect prompt injection and secret patterns |
-| Retrieval Filters | Return only documents allowed for mock role |
-| Local Logs | Log policy decisions in local JSONL files |
-| No Real Data | Do not use employer documents, customer data, or secrets |
-| No Cloud Deployment | Avoid AWS, Azure, GCP, OCI, or paid AI services in initial phase |
+The implemented sequence is:
 
-## Cloud Deployment Trust Boundary Considerations
+**Mock Identity → Prompt Risk Evaluation → Local Retrieval → Metadata Authorization → Logging / Review Trigger → Advisory Response**
 
-If the project later includes cloud reference designs, additional trust boundaries must be reviewed.
+Important behaviors include:
 
-## Cloud-Specific Boundaries
+- Prompt-risk evaluation occurs before retrieval.
+- Detected high-risk prompt patterns can be blocked before document retrieval.
+- Retrieval uses simplified keyword matching rather than embeddings or semantic search.
+- Document authorization evaluates mock role and group information.
+- Unauthorized documents are denied rather than passed to the response generator.
+- Prompt, retrieval, access-decision, and security events are written to local JSONL logs.
+- Documents marked for human review can create a simulated review event.
+- The simulated review event does not currently prevent response generation.
+- Synthetic documents and mock identities are used instead of real enterprise information.
+
+## Local Prototype Validation
+
+Two scenarios have been documented as successfully executed.
+
+### Authorized Retrieval
+
+A General Employee requested information from the mock AI acceptable-use policy.
+
+The user context was evaluated, the authorized document was retrieved, relevant events were logged, and an advisory response was generated.
+
+**Result: Pass**
+
+### Prompt Injection Blocking
+
+A General Employee submitted a prompt attempting to override instructions and reveal restricted documents.
+
+The prompt-risk logic detected the injection pattern and blocked the request before document retrieval.
+
+**Result: Pass**
+
+Additional prompt injection, access-control, and sensitive-data scenarios are defined but have not yet been validated.
+
+# Cloud Trust Boundary Considerations
+
+A future cloud implementation would introduce additional boundaries that are not exercised by the current local prototype.
+
+Examples include:
 
 | Boundary | Additional Concern |
-|---|---|
-| Application to Cloud IAM | Cloud role misconfiguration |
-| Application to Managed AI Service | Provider data handling and region selection |
-| Application to Object Storage | Bucket/container access and encryption |
-| Application to Logging Service | Log cost and retention |
-| Application to Key Management | Secret and encryption key protection |
-| Application to Vector Store | Embedding leakage and access control |
-| Application to Network Boundary | Public exposure and private endpoint design |
-| Application to SIEM | Sensitive log ingestion and alerting |
+| --- | --- |
+| Application → Cloud IAM | Role and policy misconfiguration |
+| Application → Managed AI Service | Provider data handling and regional processing |
+| Application → Object Storage | Access control and encryption |
+| Application → Logging Service | Sensitive log ingestion, retention, and cost |
+| Application → Key Management | Secret and encryption-key protection |
+| Application → Vector Store | Embedding exposure and authorization |
+| Application → Network Boundary | Public exposure and private connectivity |
+| Application → SIEM | Sensitive event ingestion and alerting |
 
-## Cloud Deployment Rule
+Before a production cloud deployment, I would expect decisions around:
 
-Cloud deployment should not occur until the following are documented:
-
+- Business justification
+- IAM design
+- Network exposure
+- Encryption
+- Data classification
+- Provider data handling
+- Logging and monitoring
+- Human review
+- Incident response
 - Cost controls
 - Budget alerts
-- Teardown process
-- IAM design
-- Network exposure review
-- Encryption requirements
-- Logging and monitoring design
-- Provider data handling review
-- Data classification
-- Human review workflow
-- Incident response process
+- Ownership
+- Teardown procedures
 
-## Security Architect Notes
+# Architecture Conclusions
 
-Trust boundaries are where architecture becomes security-relevant.
+The most important trust-boundary decisions for this scenario are:
 
-For an AI assistant, the most important trust boundary decisions are:
+1. User input is untrusted.
+2. Identity claims must come from trusted identity context rather than prompts.
+3. Authorization must be enforced outside the model.
+4. Relevant information is not automatically authorized information.
+5. Retrieved documents should be treated as potentially untrusted content.
+6. Protected information should be authorized before entering model context.
+7. Model output should be treated as untrusted until applicable response controls are satisfied.
+8. Logs are sensitive security assets.
+9. Human review should be based on risk and consequence.
+10. Administrative privilege should remain separate from content entitlement.
+11. Document ingestion and lifecycle management are governance processes.
+12. The model is not the security boundary.
 
-1. User prompts are untrusted.
-2. Retrieved documents may contain unsafe instructions.
-3. The model is not a security control.
-4. Access control must happen before retrieval and before context assembly.
-5. AI output must be validated before release.
-6. Logs are sensitive and must be protected.
-7. Human review is required for high-risk decisions.
-8. Document ingestion must be governed.
+The reference architecture places the AI model inside a governed enterprise system rather than treating the model as the control authority.
 
-## Conclusion
-
-The secure AI assistant architecture must enforce controls at every trust boundary.
-
-The strongest design pattern is to treat the model as an advisory component inside a governed system. Identity, access control, document classification, retrieval filtering, output validation, logging, and human review must provide the actual control structure.
-
-This trust boundary model helps ensure that AI adoption improves productivity without weakening confidentiality, integrity, accountability, or compliance.
+The local prototype validates selected portions of that approach without implying that the complete production architecture has been implemented.
