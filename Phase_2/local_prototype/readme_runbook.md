@@ -51,9 +51,9 @@ The prototype does not train a model, fine-tune a model, call an external LLM, o
 ## Folder Structure
 
 - local_prototype/
-  - README.md
-  - README_RUNBOOK.md
   - app.py
+  - prototype_results.md
+  - readme_runbook.md
   - requirements.txt
   - sample_users.json
   - sample_docs/
@@ -117,7 +117,7 @@ The prototype includes the following synthetic documents.
 
 From the repository root, move into the local prototype folder:
 
-    cd local_prototype
+    cd Phase_2/local_prototype
 
 Install requirements:
 

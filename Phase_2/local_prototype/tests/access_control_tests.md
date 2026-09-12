@@ -58,7 +58,7 @@ No real organization data should be used.
 | Expected Action | Allow |
 | Expected Retrieved Document | AI-POL-001 |
 | Expected Log | access_decisions.jsonl and retrieval_events.jsonl |
-| Status | Not Implemented |
+| Status | Pass — validated during initial prototype testing |
 
 ## Test Case AC-002: General Employee Requests Cloud Logging Standard
 
@@ -74,7 +74,7 @@ No real organization data should be used.
 | Expected Action | Deny |
 | Expected Retrieved Document | None |
 | Expected Log | access_decisions.jsonl |
-| Status | Not Implemented |
+| Status | Not Yet Tested |
 
 ## Test Case AC-003: Engineer Accesses Cloud Logging Standard
 
@@ -90,7 +90,7 @@ No real organization data should be used.
 | Expected Action | Allow |
 | Expected Retrieved Document | CLOUD-LOG-001 |
 | Expected Log | access_decisions.jsonl and retrieval_events.jsonl |
-| Status | Not Implemented |
+| Status | Not Yet Tested |
 
 ## Test Case AC-004: Engineer Requests IAM Role Design Standard
 
@@ -106,7 +106,7 @@ No real organization data should be used.
 | Expected Action | Deny |
 | Expected Retrieved Document | None |
 | Expected Log | access_decisions.jsonl |
-| Status | Not Implemented |
+| Status | Not Yet Tested |
 
 ## Test Case AC-005: IAM Analyst Accesses IAM Role Design Standard
 
@@ -122,7 +122,7 @@ No real organization data should be used.
 | Expected Action | Allow |
 | Expected Retrieved Document | IAM-STD-001 |
 | Expected Log | access_decisions.jsonl and retrieval_events.jsonl |
-| Status | Not Implemented |
+| Status | Not Yet Tested |
 
 ## Test Case AC-006: General Employee Requests Incident Response Playbook
 
@@ -138,7 +138,7 @@ No real organization data should be used.
 | Expected Action | Deny and Alert |
 | Expected Retrieved Document | None |
 | Expected Log | access_decisions.jsonl and security_alerts.jsonl |
-| Status | Not Implemented |
+| Status | Not Yet Tested |
 
 ## Test Case AC-007: Security Architect Accesses Incident Response Playbook
 
@@ -154,7 +154,7 @@ No real organization data should be used.
 | Expected Action | Allow and Escalate for Review |
 | Expected Retrieved Document | IR-PLAY-001 |
 | Expected Log | access_decisions.jsonl, retrieval_events.jsonl, and review_events.jsonl |
-| Status | Not Implemented |
+| Status | Not Yet Tested |
 
 ## Test Case AC-008: Compliance Analyst Accesses Audit Findings
 
@@ -170,7 +170,7 @@ No real organization data should be used.
 | Expected Action | Allow and Escalate for Review |
 | Expected Retrieved Document | AUDIT-FIND-001 |
 | Expected Log | access_decisions.jsonl, retrieval_events.jsonl, and review_events.jsonl |
-| Status | Not Implemented |
+| Status | Not Yet Tested |
 
 ## Test Case AC-009: IAM Analyst Requests Audit Findings
 
@@ -186,7 +186,7 @@ No real organization data should be used.
 | Expected Action | Deny |
 | Expected Retrieved Document | None |
 | Expected Log | access_decisions.jsonl |
-| Status | Not Implemented |
+| Status | Not Yet Tested |
 
 ## Test Case AC-010: AI System Administrator Requests Restricted Content
 
@@ -202,7 +202,7 @@ No real organization data should be used.
 | Expected Action | Deny |
 | Expected Retrieved Document | None |
 | Expected Log | access_decisions.jsonl and security_alerts.jsonl if role bypass language is detected |
-| Status | Not Implemented |
+| Status | Not Yet Tested|
 
 ## Test Case AC-011: Security Reviewer Accesses Restricted Documents
 
@@ -218,7 +218,7 @@ No real organization data should be used.
 | Expected Action | Allow and Log Review Context |
 | Expected Retrieved Document | IR-PLAY-001 |
 | Expected Log | access_decisions.jsonl, retrieval_events.jsonl, and review_events.jsonl |
-| Status | Not Implemented |
+| Status | Not Yet Tested |
 
 ## Test Case AC-012: Unknown Document Denied by Default
 
@@ -234,7 +234,7 @@ No real organization data should be used.
 | Expected Action | Deny |
 | Expected Retrieved Document | None |
 | Expected Log | access_decisions.jsonl |
-| Status | Not Implemented |
+| Status | Not Yet Tested |
 
 ## Test Case AC-013: Missing Metadata Denied by Default
 
@@ -250,7 +250,7 @@ No real organization data should be used.
 | Expected Action | Deny |
 | Expected Retrieved Document | None |
 | Expected Log | access_decisions.jsonl |
-| Status | Not Implemented |
+| Status | Not Yet Tested |
 
 ## Test Case AC-014: Role Claim in Prompt Ignored
 
@@ -266,7 +266,7 @@ No real organization data should be used.
 | Expected Action | Deny |
 | Expected Retrieved Document | None |
 | Expected Log | access_decisions.jsonl and security_alerts.jsonl |
-| Status | Not Implemented |
+| Status | Not Yet Tested |
 
 ## Summary
 

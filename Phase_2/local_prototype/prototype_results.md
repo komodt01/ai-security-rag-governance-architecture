@@ -269,11 +269,17 @@ The following tests should be run next:
 
 ## Conclusion
 
-The initial local prototype test successfully demonstrated that AI assistant security controls can be implemented locally without cloud services or paid APIs.
+## Conclusion
 
-The prototype validated two important behaviors:
+The initial local prototype demonstrated that selected AI assistant security controls can be exercised locally without cloud services or paid APIs.
+
+The initial validation confirmed two important behaviors:
 
 1. A normal authorized request can retrieve an approved internal document.
-2. A prompt injection attempt can be detected and blocked before retrieval.
+2. A prompt injection attempt can be detected and blocked before document retrieval.
 
-This supports the larger project goal of showing that secure AI assistant design requires more than model behavior. It requires identity context, access control, data classification, prompt risk detection, retrieval filtering, logging, and human review.
+These tests provide implementation evidence for selected controls from the larger architecture, particularly identity context, authorization, prompt-risk evaluation, retrieval control, and security logging.
+
+Other controls included in the prototype, such as sensitive-data detection and simulated human-review triggers, require additional test scenarios before they should be considered validated.
+
+The result supports the larger architecture principle that securing an AI assistant requires controls around the model and retrieval process, not simply controls within the model itself.
