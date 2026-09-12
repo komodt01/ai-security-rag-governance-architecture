@@ -156,7 +156,7 @@
   ],
   "classification_rules": {
     "internal": {
-      "description": "General internal information available to authenticated mock users.",
+      "description": "General internal information available to mock users with an approved role or group assignment."
       "default_action": "allow_if_authenticated"
     },
     "confidential": {
