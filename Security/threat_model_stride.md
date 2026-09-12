@@ -2,335 +2,892 @@
 
 ## Purpose
 
-This document identifies threats to the secure enterprise AI assistant architecture using the STRIDE threat modeling framework.
+This document applies the STRIDE threat-modeling framework to the enterprise AI assistant architecture.
 
-The purpose is to evaluate how an internal AI assistant using Retrieval-Augmented Generation could be abused, misused, or misconfigured in a regulated environment.
+The objective is to identify how an AI-enabled knowledge assistant could be abused, misused, compromised, or misconfigured and to determine where security controls should exist.
 
-## System Overview
+The threat model covers both:
 
-The AI assistant allows authenticated internal users to ask questions against approved organizational documents.
+1. The conceptual production AI/RAG architecture.
+2. The limited local security-control prototype used to validate selected architecture decisions.
 
-The system includes:
+These should not be confused.
 
-- User interface
-- Identity provider
-- Access control layer
-- Prompt handling layer
-- Retrieval layer
-- Approved knowledge base
-- AI model or LLM interface
-- Response validation layer
-- Logging and monitoring layer
-- Human review process
+The local prototype does not implement a production RAG platform, LLM, enterprise identity provider, cloud AI service, or production monitoring environment.
 
-## Key Assets
+# Core Principle
 
-| Asset | Description |
-|---|---|
-| User identity | Authenticated user account, role, group membership, and session data |
-| Internal documents | Approved policies, standards, architecture documents, procedures, and compliance guidance |
-| Document metadata | Classification labels, ownership, access rules, review dates, and source references |
-| Prompts | User-submitted questions or instructions |
-| Retrieved context | Document excerpts passed to the AI model |
-| AI responses | Generated responses returned to the user |
-| Logs | Prompt metadata, response metadata, user activity, policy decisions, and blocked attempts |
-| System prompts | Internal instructions that guide AI behavior |
-| Access policies | Rules that determine which documents and functions users may access |
+> The AI model is one component inside the system. It is not the security authority.
 
-## Trust Boundaries
+Important controls should exist outside the model, particularly:
 
-| Trust Boundary | Description |
-|---|---|
-| User to AI assistant interface | Boundary between employee input and the application |
-| AI assistant to identity provider | Boundary where authentication and authorization data is exchanged |
-| Prompt handling to retrieval layer | Boundary where user prompts are converted into document search requests |
-| Retrieval layer to knowledge base | Boundary where documents are queried and filtered |
-| AI assistant to AI model | Boundary where prompts and retrieved context are sent to the model |
-| AI assistant to logging layer | Boundary where activity is recorded for audit and investigation |
-| AI output to user | Boundary where generated content is presented to the user |
+- Identity
+- Authorization
+- Retrieval control
+- Data classification
+- Logging
+- Administrative control
+- Human accountability
+
+# Production Architecture in Scope
+
+A production implementation could contain:
+
+```text
+User
+  ↓
+AI Assistant
+  ↓
+Trusted Identity
+  ↓
+Prompt / Request Controls
+  ↓
+Permission-Aware Retrieval
+  ↓
+Approved Knowledge Sources
+  ↓
+Authorized Context
+  ↓
+AI Model
+  ↓
+Response Controls
+  ↓
+User
+```
+
+Security logging and monitoring should observe important events throughout the flow.
+
+Human authority should remain outside the AI for consequential decisions.
+
+# Current Local Prototype
+
+The implemented prototype is intentionally smaller:
+
+```text
+Mock User
+   ↓
+Prompt Risk Evaluation
+   ↓
+Local Retrieval
+   ↓
+Metadata Authorization
+   ↓
+Logging / Simulated Review Trigger
+   ↓
+Advisory Response
+```
+
+It uses:
+
+- Synthetic users
+- Synthetic documents
+- Roles and groups
+- Document metadata
+- Simple keyword retrieval
+- Pattern-based prompt evaluation
+- Local JSONL logging
+- Advisory response generation
+
+It does not use:
+
+- Production LLM
+- Embeddings
+- Vector database
+- Enterprise IdP
+- MFA
+- Cloud AI
+- External model API
+- Production SIEM
+- Production human-review workflow
+- Autonomous tools or agents
+
+# Key Assets
+
+A production architecture may need to protect:
+
+| Asset | Security Concern |
+| --- | --- |
+| User identity | Prevent impersonation and privilege misuse |
+| Internal documents | Prevent unauthorized disclosure or manipulation |
+| Document metadata | Preserve classification and authorization integrity |
+| Prompts | Prevent misuse and unnecessary sensitive-data exposure |
+| Retrieved context | Ensure only authorized information reaches the model |
+| AI responses | Prevent unsafe or unauthorized disclosure |
+| Logs | Preserve useful evidence without creating another sensitive repository |
+| System instructions | Prevent inappropriate exposure or manipulation |
+| Access policies | Prevent unauthorized changes to security decisions |
+| Model/provider connection | Prevent service impersonation or unauthorized data transfer |
+| Administrative configuration | Prevent unauthorized control changes |
+
+Not every asset exists in the local prototype.
+
+# Trust Boundaries
+
+Important production trust boundaries include:
+
+| Boundary | Security Question |
+| --- | --- |
+| User → Assistant | Can the request or identity be trusted? |
+| Assistant → Identity Provider | Is identity authoritative and protected? |
+| Prompt Handling → Retrieval | Can prompt content change authorization scope? |
+| Retrieval → Knowledge Source | Are only approved and authorized sources accessible? |
+| Knowledge Source → Model Context | Can malicious or unauthorized content enter context? |
+| Assistant → Model Provider | What information leaves the application boundary? |
+| Model → Response Controls | Can unsafe or unsupported output reach the user? |
+| Assistant → Logging | Can security evidence be lost or manipulated? |
+| Administrator → Configuration | Can privileged changes weaken controls? |
+| AI Output → User | Can the response be mistaken for authority? |
+
+The local prototype exercises only selected portions of these boundaries.
 
 ---
 
 # STRIDE Analysis
 
-## 1. Spoofing
+# 1. Spoofing
 
-### Threat Description
+## Threat
 
-Spoofing occurs when an attacker pretends to be another user, service, or trusted system component.
+Spoofing occurs when an attacker pretends to be another user, service, role, or trusted system component.
 
-### Example Threats
+## Example Threats
 
 | Threat | Example |
-|---|---|
-| User impersonation | An attacker uses stolen credentials to access the AI assistant |
-| Session hijacking | An attacker reuses an active session token |
-| Service impersonation | A malicious service pretends to be the approved AI model endpoint |
-| Role spoofing | A user manipulates request metadata to appear as a privileged role |
+| --- | --- |
+| User impersonation | Attacker uses stolen credentials |
+| Session hijacking | Attacker reuses a valid session |
+| Role impersonation | User claims to be an administrator in a prompt |
+| Service impersonation | Malicious endpoint pretends to be an approved model service |
+| Administrative impersonation | Attacker performs configuration changes as another administrator |
 
-### Potential Impact
+## Potential Impact
 
-- Unauthorized access to restricted documents
-- Exposure of confidential information
-- Incorrect audit attribution
-- Privileged AI functions used by unauthorized users
+- Unauthorized document access
+- Confidentiality breach
+- Incorrect attribution
+- Unauthorized administrative activity
+- Privileged AI capability misuse
 
-### Security Controls
+## Production Controls
 
-| Control | Description |
-|---|---|
-| Strong authentication | Require SSO and MFA for all users |
-| Session management | Enforce session timeout and token protection |
-| Role validation | Validate role and group membership server-side |
-| Service authentication | Authenticate application-to-model and application-to-logging connections |
-| Audit attribution | Log verified user identity for every prompt and response |
+Possible controls include:
 
-### Residual Risk
+- Enterprise SSO
+- MFA
+- Trusted identity claims
+- Secure session handling
+- Server-side authorization
+- Service authentication
+- Workload identity
+- Administrative access controls
+- Identity-aware logging
 
-Spoofing risk remains if user credentials are compromised or if privileged access is not reviewed regularly.
+## Local Prototype
+
+The prototype uses synthetic users loaded from local configuration.
+
+It does not validate enterprise authentication or session security.
+
+It does demonstrate one important architecture principle:
+
+> A natural-language claim of privilege should not become trusted identity.
+
+Authorization uses the configured mock role/group context rather than allowing the prompt to grant privilege.
+
+## Residual Risk
+
+In production, spoofing remains possible through:
+
+- Credential compromise
+- Session compromise
+- Identity-provider compromise
+- Excessive privilege
+- Weak administrative controls
+
+Identity security therefore remains an external dependency of the AI architecture.
 
 ---
 
-## 2. Tampering
+# 2. Tampering
 
-### Threat Description
+## Threat
 
-Tampering occurs when data, prompts, documents, model inputs, model outputs, logs, or policies are altered without authorization.
+Tampering occurs when prompts, documents, metadata, configuration, logs, model inputs, model outputs, or security policies are changed without authorization.
 
-### Example Threats
+## Example Threats
 
 | Threat | Example |
-|---|---|
-| Prompt manipulation | User attempts to override system instructions |
-| Document tampering | An attacker modifies source documents to influence AI responses |
-| Retrieval manipulation | Unauthorized changes to document metadata alter what content is retrieved |
-| Response tampering | AI output is modified before being shown to the user |
-| Log tampering | An attacker deletes or changes prompt/response logs |
+| --- | --- |
+| Prompt manipulation | User attempts to override security behavior |
+| Document poisoning | Malicious instructions are inserted into a knowledge source |
+| Metadata tampering | Authorization metadata is changed |
+| Policy tampering | Security configuration is weakened |
+| Response tampering | Output is modified before reaching the user |
+| Log tampering | Evidence is deleted or altered |
 
-### Potential Impact
+## Potential Impact
 
-- AI returns incorrect or unsafe guidance
-- Users rely on manipulated documents
-- Audit records become unreliable
-- Prompt injection succeeds
-- Compliance evidence is weakened
+- Incorrect guidance
+- Unauthorized retrieval
+- Indirect prompt injection
+- Security-control bypass
+- Unreliable audit evidence
+- Incorrect business decisions
 
-### Security Controls
+## Production Controls
 
-| Control | Description |
-|---|---|
-| Change control | Require approval for document updates |
-| Document integrity | Track document version, owner, and review date |
-| Prompt injection controls | Detect attempts to override system instructions |
-| Output validation | Check responses for unsupported or unsafe content |
-| Immutable logging | Restrict log modification and retain audit history |
-| Admin separation | Separate content administration from system administration |
+Possible controls include:
 
-### Residual Risk
+- Content ownership
+- Change management
+- Version control
+- Document approval
+- Metadata integrity
+- Administrative separation
+- Protected security configuration
+- Protected centralized logging
+- Prompt-injection controls
+- Response controls
 
-Tampering risk remains if document governance is weak or if logs are not protected from privileged misuse.
+## Local Prototype
+
+The prototype demonstrates:
+
+- Local document metadata
+- Document approval status
+- Prompt-risk evaluation
+- Authorization decisions
+- Local JSONL evidence
+
+It does not implement:
+
+- Immutable logs
+- Production content approval workflow
+- Enterprise change management
+- Indirect prompt-injection protection
+- Production response validation
+
+## Important AI-Specific Concern
+
+A document can be technically authentic while still containing malicious instructions.
+
+Therefore:
+
+> Document integrity and prompt-injection resistance are related but different problems.
+
+A production RAG architecture should treat retrieved content as untrusted input even when the source itself is approved.
 
 ---
 
-## 3. Repudiation
+# 3. Repudiation
 
-### Threat Description
+## Threat
 
-Repudiation occurs when users or administrators deny actions because the system lacks sufficient evidence.
+Repudiation occurs when a user or administrator can deny an action because sufficient evidence does not exist.
 
-### Example Threats
+## Example Threats
 
 | Threat | Example |
-|---|---|
-| User denies prompt submission | A user claims they did not submit a risky prompt |
-| Admin denies policy change | An administrator changes access rules without traceability |
-| Missing source traceability | AI response cannot be tied back to source documents |
-| Incomplete logs | Prompt, response, or policy decision is not recorded |
+| --- | --- |
+| User denies request | User disputes submitting a malicious prompt |
+| Admin denies change | Security configuration changed without attribution |
+| Missing retrieval evidence | Cannot determine which documents were considered |
+| Missing authorization evidence | Cannot determine why content was allowed |
+| Missing review evidence | Cannot determine who approved a consequential action |
 
-### Potential Impact
+## Potential Impact
 
-- Weak incident investigation capability
-- Poor audit readiness
-- Inability to prove misuse
-- Inability to reconstruct AI decision flow
-- Increased regulatory or legal risk
+- Weak incident investigation
+- Poor accountability
+- Incomplete audit evidence
+- Difficulty reconstructing security decisions
+- Increased legal or compliance exposure
 
-### Security Controls
+## Production Controls
 
-| Control | Description |
-|---|---|
-| User activity logging | Log user ID, timestamp, prompt metadata, and session metadata |
-| Admin action logging | Log changes to policies, documents, and configuration |
-| Source citation | Record which documents were retrieved for each response |
-| Policy decision logging | Log allow, deny, block, and escalation decisions |
-| Log retention | Define retention requirements based on compliance needs |
+Useful evidence may include:
 
-### Residual Risk
+- Trusted user identity
+- Timestamp
+- Correlation ID
+- Prompt metadata
+- Retrieval decisions
+- Authorization decisions
+- Security alerts
+- Administrative changes
+- Review decisions
+- Source references
 
-Repudiation risk remains if logs contain too little detail or if sensitive prompts must be minimized for privacy reasons.
+Retention should follow enterprise policy rather than arbitrary periods defined by this project.
+
+## Local Prototype
+
+The prototype writes:
+
+```text
+prompt_events.jsonl
+retrieval_events.jsonl
+access_decisions.jsonl
+security_alerts.jsonl
+review_events.jsonl
+```
+
+This provides evidence for selected local control decisions.
+
+The prototype does not implement:
+
+- Enterprise log immutability
+- SIEM integration
+- Production identity attribution
+- Administrative audit logging
+- Formal human approval records
+
+## Architecture Tradeoff
+
+Logging must balance accountability against privacy.
+
+Capturing every prompt and response may improve reconstruction but may also create a sensitive secondary repository.
+
+The production design should collect evidence intentionally.
 
 ---
 
-## 4. Information Disclosure
+# 4. Information Disclosure
 
-### Threat Description
+## Threat
 
-Information disclosure occurs when sensitive, confidential, restricted, or unauthorized information is exposed.
+Information disclosure occurs when information is exposed to someone or something that should not receive it.
 
-### Example Threats
+For an enterprise AI assistant, this is one of the most important threat categories because information can leak through several paths.
+
+## Exposure Paths
+
+```text
+User Prompt
+    ↓
+Retrieval
+    ↓
+Context
+    ↓
+Model Provider
+    ↓
+Response
+    ↓
+Logs
+```
+
+Each stage can create a different disclosure risk.
+
+## Example Threats
 
 | Threat | Example |
-|---|---|
-| Unauthorized document retrieval | A user receives content from documents outside their role |
-| Sensitive prompt submission | User enters customer data, credentials, or confidential records |
-| Sensitive response output | AI response exposes restricted information |
-| Cross-user leakage | One user's context or prompt appears in another user's response |
-| Excessive logging | Logs store sensitive prompt or response content without controls |
-| Vendor data exposure | Prompts or retrieved context are sent to an external provider without approval |
+| --- | --- |
+| Unauthorized retrieval | User receives a document outside authorized scope |
+| Sensitive prompt | User submits customer data or credentials |
+| Sensitive output | AI returns protected information |
+| Cross-user leakage | One user's context appears in another response |
+| Excessive logging | Sensitive prompts or responses are retained unnecessarily |
+| Provider exposure | Enterprise information is sent to an unapproved provider |
+| System instruction exposure | Protected instructions are revealed |
 
-### Potential Impact
+## Potential Impact
 
-- Exposure of regulated data
-- Loss of customer or employee privacy
-- Intellectual property leakage
-- Compliance violations
-- Legal or reputational harm
+- Confidentiality breach
+- Privacy exposure
+- Intellectual-property loss
+- Regulatory impact
+- Credential compromise
+- Security architecture exposure
+- Reputational harm
 
-### Security Controls
+## Production Controls
 
-| Control | Description |
-|---|---|
-| Data classification | Label documents by sensitivity and approved use |
-| Document-level authorization | Retrieve only documents the user is permitted to access |
-| Prompt filtering | Detect and block sensitive data in prompts |
-| Response filtering | Detect sensitive content before output is shown |
-| Data minimization | Send only necessary context to the model |
-| Log minimization | Avoid storing full sensitive prompts unless justified |
-| Provider review | Assess AI provider data handling, retention, and training policies |
+Possible controls include:
 
-### Residual Risk
+- Data classification
+- Trusted identity
+- Document-level authorization
+- Permission-aware retrieval
+- Data minimization
+- Prompt controls
+- Context minimization
+- Provider review
+- Response controls
+- Log minimization
+- Encryption
+- Secrets management
 
-Information disclosure is one of the highest-risk categories for AI assistants because retrieval, generation, and logging can each expose sensitive data if controls fail.
+## Local Prototype
+
+The prototype uses only synthetic information.
+
+It demonstrates selected controls for:
+
+- Document classification metadata
+- Role/group authorization
+- Prompt-risk evaluation
+- Blocking selected sensitive-data patterns
+- Retrieval allow/deny evidence
+
+It does not validate:
+
+- Production DLP
+- Provider data handling
+- Cross-user model isolation
+- LLM response leakage
+- Embedding security
+- Vector-database security
+
+## Architecture Priority
+
+Information disclosure deserves significant attention in a production AI/RAG architecture because the AI assistant can create a new interface to existing enterprise information.
+
+The architecture should preserve existing authorization boundaries rather than creating a broader AI-specific entitlement.
 
 ---
 
-## 5. Denial of Service
+# 5. Denial of Service
 
-### Threat Description
+## Threat
 
-Denial of Service occurs when the AI assistant, retrieval layer, model interface, or supporting systems become unavailable or degraded.
+Denial of Service occurs when the AI assistant or one of its dependencies becomes unavailable, degraded, or excessively expensive to operate.
 
-### Example Threats
+## Example Threats
 
 | Threat | Example |
-|---|---|
-| Prompt flooding | User or attacker submits excessive prompts |
-| Expensive query abuse | Long or complex prompts consume excessive compute or API usage |
-| Retrieval overload | Large document searches degrade performance |
-| Model dependency outage | AI model provider becomes unavailable |
-| Logging failure | Logging pipeline outage prevents audit capture |
+| --- | --- |
+| Prompt flooding | Excessive requests overwhelm the service |
+| Expensive-query abuse | Requests consume excessive model resources |
+| Retrieval overload | Broad searches consume excessive resources |
+| Provider outage | External model becomes unavailable |
+| Identity outage | Users cannot authenticate |
+| Logging outage | Security evidence cannot be recorded |
+| Cost exhaustion | Usage causes budget limits to be reached |
 
-### Potential Impact
+## Potential Impact
 
-- AI assistant unavailable to users
-- Increased operating costs
-- Delayed business workflows
-- Reduced trust in AI service
-- Loss of monitoring or audit evidence
+- Service unavailable
+- Delayed business workflow
+- Increased cost
+- Missing evidence
+- User reliance on unavailable service
+- Reduced trust in the platform
 
-### Security Controls
+## Production Controls
 
-| Control | Description |
-|---|---|
-| Rate limiting | Limit prompt frequency by user or role |
-| Quotas | Define usage limits by group or business unit |
-| Timeout controls | Stop long-running queries |
-| Cost monitoring | Monitor usage and cost patterns |
-| Graceful degradation | Provide fallback to source documents if AI service fails |
-| Service health monitoring | Alert on retrieval, model, or logging failures |
+Possible controls include:
 
-### Residual Risk
+- Rate limits
+- Quotas
+- Timeouts
+- Usage controls
+- Cost monitoring
+- Dependency monitoring
+- Graceful degradation
+- Source-document fallback
+- Capacity planning
+- Provider contingency planning
 
-Denial of Service risk remains if the system depends on external model providers or if usage spikes are not monitored.
+## Local Prototype
+
+The local prototype is not a production service.
+
+It does not implement:
+
+- Rate limiting
+- Production quotas
+- Cloud cost controls
+- Availability monitoring
+- Provider failover
+- Production SLOs
+
+Its approximate operating cost is $0.
+
+## Architecture Consideration
+
+The business should still have access to authoritative source information when the AI assistant is unavailable.
+
+The AI layer should not unnecessarily become the only path to enterprise knowledge.
 
 ---
 
-## 6. Elevation of Privilege
+# 6. Elevation of Privilege
 
-### Threat Description
+## Threat
 
-Elevation of Privilege occurs when a user gains capabilities beyond their authorized role.
+Elevation of Privilege occurs when a user, administrator, service, or AI component gains authority beyond what was intended.
 
-### Example Threats
+## Example Threats
 
 | Threat | Example |
-|---|---|
-| Prompt-based privilege escalation | User instructs AI to ignore role restrictions |
-| Retrieval bypass | User manipulates prompts to access restricted documents |
-| Admin function abuse | Non-admin user accesses configuration or document ingestion tools |
-| Tool misuse | AI assistant performs actions beyond intended read-only behavior |
-| Excessive agency | AI system is granted ability to execute changes without human approval |
+| --- | --- |
+| Prompt-based privilege claim | User tells AI to treat them as an administrator |
+| Retrieval bypass | Prompt attempts to obtain Restricted documents |
+| Administrative misuse | Platform administrator accesses protected content |
+| Configuration abuse | User changes security controls |
+| Tool misuse | AI invokes a privileged downstream API |
+| Excessive agency | AI takes consequential action without human authority |
 
-### Potential Impact
+## Potential Impact
 
-- Unauthorized access to restricted documents
-- Unauthorized configuration changes
-- Unapproved business or security decisions
-- Privileged operations triggered through AI workflow
-- Loss of control over AI-enabled actions
+- Unauthorized information access
+- Unauthorized configuration change
+- Improper approval
+- Production impact
+- Fraud or financial consequence
+- Loss of governance control
 
-### Security Controls
+## Production Controls
 
-| Control | Description |
-|---|---|
-| Deny-by-default authorization | Users receive no access unless explicitly granted |
-| Server-side access checks | Never rely on user-provided role claims |
-| Read-only initial design | Initial AI assistant should not perform autonomous changes |
-| Human approval | Require approval for high-risk decisions or actions |
-| Least privilege | Restrict admin and ingestion functions |
-| Separation of duties | Separate AI users, content owners, reviewers, and administrators |
+Possible controls include:
 
-### Residual Risk
+- Deny-by-default authorization
+- Trusted identity
+- Least privilege
+- Document-level authorization
+- Administrative separation
+- Privileged-access controls
+- Tool-specific authorization
+- Transaction limits
+- Human authority for consequential actions
+- Detailed action logging
 
-Elevation of Privilege risk remains if the AI assistant is later connected to tools, APIs, ticketing systems, or production workflows without strong approval controls.
+## Local Prototype
+
+The prototype demonstrates:
+
+- Mock roles and groups
+- Document-level allow/deny behavior
+- Separation between AI system administration and content entitlement
+- Prompt-risk evaluation
+- Block-before-retrieval behavior for the validated injection test
+
+The prototype is advisory only.
+
+It cannot:
+
+- Modify production systems
+- Approve access
+- Execute transactions
+- Invoke enterprise tools
+- Make production changes
+
+## Agentic AI Consideration
+
+If the architecture later moves from:
+
+```text
+AI answers
+```
+
+to:
+
+```text
+AI acts
+```
+
+the Elevation-of-Privilege threat changes substantially.
+
+Each tool would require its own:
+
+- Identity
+- Authorization
+- Scope
+- Transaction boundary
+- Logging
+- Failure handling
+- Human-approval decision
+
+Agent capability should therefore trigger a new threat-model review.
 
 ---
 
-# Summary Risk Table
+# Cross-Cutting AI Threats
 
-| STRIDE Category | Risk Level | Primary Concern |
-|---|---|---|
-| Spoofing | Medium | Stolen credentials or false role claims |
-| Tampering | High | Prompt injection or document manipulation |
-| Repudiation | Medium | Incomplete logging or weak audit trails |
-| Information Disclosure | High | Sensitive data leakage through prompts, retrieval, output, or logs |
-| Denial of Service | Medium | Usage abuse, model outage, or cost spikes |
-| Elevation of Privilege | High | Unauthorized access or excessive AI agency |
+Some AI risks do not fit neatly into only one STRIDE category.
 
-## Highest Priority Risks
+# Prompt Injection
 
-The highest priority risks for this architecture are:
+Prompt injection may contribute to:
 
-1. Information disclosure
-2. Prompt injection and tampering
-3. Elevation of privilege
-4. Weak logging and auditability
-5. Overreliance on AI-generated responses
+- Tampering
+- Information Disclosure
+- Elevation of Privilege
 
-## Recommended Control Priorities
+The current prototype demonstrates one direct prompt-injection control path.
 
-| Priority | Control Area | Reason |
-|---|---|---|
-| 1 | Document-level access control | Prevents unauthorized retrieval |
-| 2 | Prompt injection controls | Reduces manipulation risk |
-| 3 | Sensitive data filtering | Reduces disclosure risk |
-| 4 | Source citation and response validation | Reduces hallucination and overreliance |
-| 5 | Logging and monitoring | Supports investigation and audit |
-| 6 | Human review | Keeps accountability with approved personnel |
-| 7 | Cost and rate controls | Prevents misuse and runaway usage |
+It does not demonstrate comprehensive prompt-injection resistance.
 
-## Conclusion
+# Indirect Prompt Injection
 
-The AI assistant introduces new risk patterns beyond traditional application architecture. The most important design concern is not only whether the model generates accurate answers, but whether the surrounding system enforces identity, access, data protection, logging, and human accountability.
+Malicious retrieved content can attempt to manipulate the model.
 
-The architecture should treat the AI model as one component inside a governed system, not as the control authority.
+This affects:
+
+- Tampering
+- Information Disclosure
+- Elevation of Privilege
+
+The production architecture should treat retrieved content as untrusted.
+
+The local prototype does not implement an LLM and therefore does not validate indirect prompt-injection controls.
+
+# Hallucination
+
+Hallucination is not naturally a STRIDE threat by itself.
+
+Its security significance depends on consequence.
+
+Incorrect output could contribute to:
+
+- Unsafe business decisions
+- Incorrect security guidance
+- Compliance mistakes
+- Operational errors
+
+Controls may include:
+
+- Source grounding
+- Response validation
+- Authority boundaries
+- Human review for consequential decisions
+
+The local prototype does not use an LLM and therefore does not validate hallucination controls.
+
+# Excessive Agency
+
+Excessive agency becomes relevant when AI can invoke tools or perform actions.
+
+It can contribute to:
+
+- Elevation of Privilege
+- Tampering
+- Information Disclosure
+- Denial of Service
+
+The current prototype has no autonomous action capability.
+
+---
+
+# Threat Prioritization
+
+This project does not assign fixed numeric or universal Medium/High ratings to each STRIDE category.
+
+The priority depends on:
+
+- Actual data
+- User population
+- Production authority
+- Exposure
+- Threat likelihood
+- Business consequence
+- Control maturity
+
+For the **production concept**, the areas I would pay particular attention to are:
+
+1. Unauthorized information disclosure
+2. Authorization bypass
+3. Prompt and retrieved-content manipulation
+4. Administrative privilege
+5. Logging and evidence
+6. Overreliance on AI output
+7. Operational dependency
+8. Agent/tool authority if later introduced
+
+This is a design priority rather than a formal enterprise risk rating.
+
+# Threat-to-Control Summary
+
+| Threat Area | Important Architecture Controls |
+| --- | --- |
+| Identity spoofing | Trusted identity, MFA, session security |
+| Role spoofing | Server-side authorization |
+| Prompt manipulation | Prompt controls plus independent authorization |
+| Document poisoning | Content governance and untrusted-context handling |
+| Metadata tampering | Protected configuration and change control |
+| Log tampering | Protected centralized logging |
+| Unauthorized retrieval | Permission-aware retrieval |
+| Sensitive prompt | Input controls and data policy |
+| Sensitive output | Authorized context plus output controls |
+| Provider exposure | Data minimization and vendor review |
+| Service exhaustion | Rate limits, quotas, monitoring |
+| Excess privilege | Least privilege and separation of duties |
+| Excessive agency | Tool authorization and human authority |
+
+# Current Prototype Evidence
+
+The prototype currently provides implementation evidence for selected controls:
+
+- Synthetic identity context
+- Role/group authorization
+- Document metadata
+- Prompt-risk evaluation
+- Selected sensitive-data patterns
+- Simple local retrieval
+- Document allow/deny decisions
+- Structured JSONL evidence
+- Security-alert generation
+- Simulated review trigger
+- Advisory-only response
+
+# Validated Scenarios
+
+Two initial scenarios are documented as executed.
+
+## Authorized Policy Retrieval
+
+A mock General Employee requested the approved synthetic AI acceptable-use policy.
+
+**Result: Pass**
+
+This provides evidence for selected retrieval and authorization behavior.
+
+## Direct Prompt Injection
+
+A mock General Employee attempted to override instructions and reveal Restricted documents.
+
+**Result: Pass**
+
+The request was blocked before retrieval and a security alert was generated.
+
+Other documented test scenarios remain **Not Yet Tested**.
+
+# Controls Not Validated by the Prototype
+
+The current project should not claim implementation evidence for:
+
+- Enterprise authentication
+- MFA
+- Session security
+- Production SSO
+- Immutable logging
+- SIEM integration
+- Production DLP
+- Production LLM output controls
+- Indirect prompt-injection defense
+- Vector-database security
+- Embedding security
+- Cloud provider controls
+- Provider data handling
+- Production human approval
+- Rate limiting
+- Production resilience
+- Autonomous-agent controls
+
+These remain production architecture concerns.
+
+# Failure Paths
+
+A threat model should consider what happens when a control fails.
+
+## Prompt Filter Misses an Attack
+
+Authorization should still prevent unauthorized document access.
+
+## Authorization Cannot Be Determined
+
+Protected content should be denied.
+
+## Logging Fails
+
+A production system should define whether sensitive operations fail closed, degrade safely, or continue with alternate evidence.
+
+The appropriate behavior depends on business consequence.
+
+## Model Provider Fails
+
+Users should retain access to authoritative source systems where possible.
+
+## Retrieved Content Is Malicious
+
+The production architecture should treat retrieved content as untrusted and prevent it from becoming control authority.
+
+## Human Review Is Unavailable
+
+Consequential decisions requiring human authority should not silently become AI-approved decisions.
+
+# Architecture Decisions
+
+## Decision 1 — Keep Authorization Outside the Model
+
+**Reason:** Prompt or model behavior should not redefine access.
+
+## Decision 2 — Preserve Document-Level Access
+
+**Reason:** AI should not create a broader entitlement than the source system.
+
+## Decision 3 — Treat Retrieved Content as Untrusted
+
+**Reason:** Approved documents can still contain malicious or inappropriate instructions.
+
+## Decision 4 — Separate Platform Administration from Data Entitlement
+
+**Reason:** Operating the AI system should not automatically grant access to all content.
+
+## Decision 5 — Keep the Initial System Advisory
+
+**Reason:** Read-only advisory use reduces the consequence of model error and privilege misuse.
+
+## Decision 6 — Log Security Decisions
+
+**Reason:** Investigators need evidence of prompt, retrieval, and authorization behavior.
+
+## Decision 7 — Reassess When the Architecture Changes
+
+A new threat review should occur when introducing:
+
+- Real enterprise data
+- Production LLM
+- New provider
+- New retrieval source
+- Enterprise identity
+- Cloud deployment
+- Agent/tool execution
+- Production decision authority
+- New user population
+
+# Relationship to the Local Prototype
+
+The STRIDE model intentionally extends beyond what the prototype implements.
+
+That is appropriate.
+
+Threat modeling asks:
+
+> What could go wrong in the intended architecture?
+
+Prototype validation asks:
+
+> Which selected control behaviors have I actually demonstrated?
+
+Keeping those questions separate prevents the portfolio from overstating implementation while still demonstrating production architecture thinking.
+
+# Conclusion
+
+STRIDE provides a useful structure for examining AI security, but the important architectural insight is broader than the six category names.
+
+An AI assistant introduces new paths between:
+
+```text
+Identity
+   ↓
+Prompt
+   ↓
+Retrieval
+   ↓
+Enterprise Data
+   ↓
+Model
+   ↓
+Response
+   ↓
+Business Decision
+```
+
+The security architecture must preserve trust boundaries across that path.
+
+For this project, the production threat model identifies the broader risks while the local prototype validates selected controls using synthetic data.
+
+The strongest design principle remains:
+
+> The model can assist with information. It does not become the authority for identity, access, data entitlement, or consequential business decisions.
