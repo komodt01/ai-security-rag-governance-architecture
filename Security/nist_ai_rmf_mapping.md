@@ -2,564 +2,865 @@
 
 ## Purpose
 
-This document maps the secure enterprise AI assistant architecture to the NIST AI Risk Management Framework.
+This document maps the enterprise AI security architecture and selected local prototype controls to the NIST AI Risk Management Framework (AI RMF).
 
-The purpose is to show how the AI assistant can be governed, designed, monitored, and managed in a way that supports trustworthy AI adoption in a regulated environment.
+The purpose is to show how the project considers AI risk through the NIST AI RMF functions:
 
-This mapping focuses on a Retrieval-Augmented Generation assistant used to answer employee questions from approved internal documents.
+- Govern
+- Map
+- Measure
+- Manage
 
-## Scope
+This is an architecture mapping.
 
-This mapping applies to:
+> It is not a NIST certification, compliance attestation, or claim that every NIST AI RMF outcome has been implemented.
 
-- AI governance
-- AI risk assessment
-- Data classification
-- Identity and access control
-- Prompt injection controls
-- Logging and monitoring
-- Human review
-- Model and vendor risk
-- Compliance evidence
-- Operational controls
-- Cost controls
-- Local prototype and future cloud reference designs
+The mapping distinguishes between:
 
-## Project Context
+1. Production architecture and governance requirements.
+2. Controls demonstrated by the local security-control prototype.
+3. Controls that remain future production considerations.
 
-The AI assistant is designed as an advisory internal tool.
+# Project Context
 
-The assistant should:
+The production concept is an internal AI assistant that could eventually use Retrieval-Augmented Generation to answer employee questions from approved enterprise information.
 
-- Answer questions using approved internal documents
-- Enforce role-based and document-level access
-- Provide source references where possible
-- Avoid processing real sensitive data during the local prototype
-- Avoid making final legal, regulatory, access, or production decisions
-- Log security-relevant activity
-- Escalate high-risk requests to human reviewers
-- Remain local-first unless cloud deployment is explicitly approved
+The current project has progressed through:
 
-The assistant should not:
+```text
+Architecture and Governance
+        ↓
+Local Security-Control Prototype
+        ↓
+Selected Control Validation
+```
 
-- Train on confidential or regulated data without approval
-- Access unrestricted document repositories
-- Approve access requests
-- Modify production systems
-- Make final compliance decisions
-- Reveal system prompts or restricted content
-- Operate without human accountability
+The implemented prototype uses:
 
-## NIST AI RMF Core Functions
+- Synthetic users
+- Synthetic documents
+- Mock roles and groups
+- Document metadata
+- Simple keyword retrieval
+- Pattern-based prompt-risk evaluation
+- Document authorization
+- Local JSONL logging
+- Advisory response generation
+- Simulated human-review triggers
 
-The NIST AI RMF is organized around four core functions:
+It does not use:
 
-| Function | Description |
-|---|---|
-| Govern | Establish organizational policies, accountability, roles, and risk management processes for AI |
-| Map | Identify the context, intended purpose, stakeholders, risks, impacts, and operating environment |
-| Measure | Analyze, assess, test, and monitor AI risks and system behavior |
-| Manage | Prioritize, respond to, reduce, monitor, and communicate AI risks over time |
+- Production LLM
+- Embeddings
+- Vector database
+- Enterprise identity provider
+- Cloud AI
+- External model API
+- Production SIEM
+- Production human-review workflow
+- Real enterprise data
+- Autonomous tools or agents
 
-## Mapping Summary
+# Architecture Principle
 
-| NIST AI RMF Function | Project Alignment |
-|---|---|
-| Govern | AI use case intake, ownership, approval workflow, human review, risk register, governance artifacts |
-| Map | Business case, data flow, trust boundaries, users, document classifications, use case scope |
-| Measure | STRIDE threat model, OWASP LLM mapping, prompt injection testing, logging, risk scoring |
-| Manage | Risk treatment, access controls, monitoring, escalation, incident response, cost controls |
+> The AI assistant should not create a new path around existing enterprise authorization, data-governance, and accountability boundaries.
+
+The model is treated as one component within the architecture rather than as the control authority.
+
+# NIST AI RMF Functions
+
+| Function | Project Interpretation |
+| --- | --- |
+| Govern | Establish accountability, policy, oversight, and risk-management expectations |
+| Map | Understand the business context, users, data, impacts, assumptions, and system boundaries |
+| Measure | Assess, test, observe, and gather evidence about risk and control behavior |
+| Manage | Prioritize risk, select treatment, respond to issues, and adapt controls as the system changes |
+
+# Mapping Summary
+
+| Function | Project Alignment |
+| --- | --- |
+| Govern | Use-case intake, risk assessment, ownership concepts, data governance, human-accountability requirements |
+| Map | Business case, data flow, trust boundaries, data classification, user roles, deployment assumptions |
+| Measure | STRIDE analysis, OWASP mapping, test scenarios, local control validation, structured security evidence |
+| Manage | Risk treatment concepts, authorization, logging, incident-response planning, deployment decision gates |
+
+The amount of implementation evidence differs by function.
 
 ---
 
-# Govern Function
+# GOVERN
 
 ## Objective
 
-The Govern function establishes the policies, roles, responsibilities, processes, and oversight needed to manage AI risk throughout the system lifecycle.
+Governance establishes how AI risk is owned, reviewed, communicated, and controlled.
 
-For this project, governance is critical because the AI assistant may influence security, architecture, IAM, compliance, or operational decisions.
+For this architecture, governance begins before model or cloud technology is selected.
 
-## Govern Mapping
+Important questions include:
 
-| Governance Area | Project Implementation |
-|---|---|
-| AI ownership | Business owner, technical owner, security owner, data owner, and governance owner are identified |
-| Use case approval | AI use case intake and risk assessment process are required before implementation |
-| Risk accountability | AI risk register documents risks, owners, treatment, and status |
-| Human accountability | High-risk decisions require human review and cannot be delegated to AI |
-| Policy alignment | AI acceptable use, data classification, access control, and logging requirements are documented |
-| Role separation | Users, content owners, reviewers, administrators, and audit viewers have separate responsibilities |
-| Cost governance | Cloud deployment is restricted until budgets, alerts, and teardown procedures are documented |
-| Ongoing review | AI use cases are reviewed periodically or when scope, data, model, or vendor changes |
+- What business problem is being solved?
+- Who is accountable for the outcome?
+- What data is involved?
+- Who is allowed to use the capability?
+- What decisions may the AI influence?
+- What decisions remain human?
+- What risks require treatment?
+- What evidence is required?
+- What changes require reassessment?
 
-## Govern Controls
+# Govern Alignment
 
-| Control | Description |
-|---|---|
-| AI Use Case Intake | Captures business purpose, users, data, model, owner, and risk context |
-| AI Risk Assessment | Scores data, access, prompt/model, vendor, operational, and compliance risk |
-| AI Risk Register | Tracks identified AI risks and mitigation status |
-| Human Review Workflow | Routes high-risk requests to accountable human reviewers |
-| Data Owner Approval | Requires data owner approval before documents are ingested |
-| Security Architecture Review | Reviews AI system design, trust boundaries, and controls |
-| Acceptable Use Requirements | Defines approved and prohibited AI use cases |
-| Cloud Cost Decision Gate | Prevents paid cloud deployment without cost controls |
+| Governance Area | Project Approach |
+| --- | --- |
+| Business ownership | Intake identifies accountable business ownership |
+| Technical ownership | Production implementation requires technical ownership |
+| Security architecture | Security requirements and trust boundaries are documented |
+| Data ownership | Data owners remain responsible for approved enterprise sources |
+| Use-case review | AI use-case intake evaluates business purpose and scope |
+| Risk assessment | Qualitative AI risk assessment evaluates exposure and consequence |
+| Human accountability | Consequential decisions remain with authorized humans |
+| Data governance | Classification and approved-use requirements are documented |
+| Role separation | Platform administration does not automatically grant content entitlement |
+| Change governance | Material changes should trigger reassessment |
 
-## Govern Evidence
+These are architecture and governance requirements.
 
-| Evidence Artifact | Location |
-|---|---|
-| Business case | business_case.md |
-| Cost controls | cost_controls.md |
-| AI risk assessment | governance/ai_risk_assessment.md |
-| Human review requirements | governance/human_review_requirements.md |
-| Access control model | security/access_control_model.md |
-| Logging requirements | security/logging_monitoring.md |
-| Incident response playbook | incident_response/ai_incident_response_playbook.md |
+They should not be interpreted as evidence that a production governance organization or approval workflow has been deployed.
 
-## Govern Risks Addressed
+# Govern Artifacts
 
-| Risk | Governance Response |
-|---|---|
-| Shadow AI adoption | Approved use case intake and AI governance review |
-| Unclear ownership | Named business, technical, security, and data owners |
-| Overreliance on AI | Advisory-only design and human review |
-| Unapproved data usage | Data owner approval and data classification |
-| Weak accountability | Human review and audit logging |
-| Runaway cloud cost | Cost decision gates and local-first prototype |
-| Compliance ambiguity | Compliance mapping and documented control ownership |
+Relevant repository artifacts include:
+
+```text
+Business_Case.md
+Cost_Controls.md
+Governance/ai_use_case_intake.md
+Governance/Data_Classification.md
+Governance/human_review_requirements.md
+Security/ai_risk_assessment.md
+Security/access_control_model.md
+incident_response/
+```
+
+# Human Accountability
+
+The project does not use a rule that every High-risk prompt or every Restricted document automatically requires human approval.
+
+Instead:
+
+> Human review should be based primarily on the consequence of the decision or action.
+
+Examples that may require accountable human authority include:
+
+- Access approval
+- Production change
+- Legal interpretation
+- Regulatory decision
+- Security exception
+- Financial decision
+- High-impact personnel decision
+
+A prompt-injection attempt is primarily a security event rather than a normal business approval workflow.
+
+# Current Prototype Evidence for Govern
+
+The local prototype provides limited evidence for governance concepts through:
+
+- Synthetic role definitions
+- Document classifications
+- Document ownership metadata
+- Approved-document status
+- Separation between AI system administration and content entitlement
+- Advisory-only response behavior
+- Simulated review metadata
+
+The prototype does not implement:
+
+- Enterprise approval workflow
+- Formal risk acceptance
+- Real data-owner approval
+- Production governance board
+- Formal human-review routing
+- Production access certification
 
 ---
 
-# Map Function
+# MAP
 
 ## Objective
 
-The Map function identifies the context in which the AI system operates, including the business purpose, intended users, data flows, stakeholder impact, risks, assumptions, and system boundaries.
+Map establishes the context in which AI risk exists.
 
-For this project, mapping ensures the AI assistant is clearly scoped before implementation.
+For this project, that means understanding the complete path from business need to information access and eventual business consequence.
 
-## Map Mapping
+# Business Context
 
-| Context Area | Project Implementation |
-|---|---|
-| Business context | A regulated organization wants a secure internal AI assistant for approved documents |
-| Intended users | Employees, analysts, engineers, security architects, IAM analysts, compliance analysts, reviewers |
-| Intended use | Advisory question answering and document retrieval support |
-| Prohibited use | Access approval, legal decisions, production changes, unrestricted data search |
-| Data context | Approved internal documents with classification metadata |
-| System boundaries | User interface, identity provider, retrieval layer, AI model, validation layer, logging layer |
-| Trust boundaries | User-to-application, application-to-identity provider, retrieval-to-knowledge base, model boundary |
-| Risk context | Prompt injection, sensitive data disclosure, unauthorized retrieval, hallucination, excessive agency |
-| Deployment context | Local-first prototype; cloud reference only unless approved |
+The production concept is an internal AI assistant intended to help users locate and understand approved enterprise information.
 
-## Map Controls
+The system is intended to be advisory.
 
-| Control | Description |
-|---|---|
-| Business Case Definition | Documents why the AI assistant is needed and what business problem it solves |
-| Use Case Scoping | Defines approved, restricted, and prohibited AI uses |
-| Data Flow Documentation | Shows how prompts, documents, context, responses, and logs move through the system |
-| Trust Boundary Identification | Identifies points where security controls must be enforced |
-| Data Classification | Defines whether documents are public, internal, confidential, restricted, or regulated |
-| User Role Definition | Defines who may use the assistant and what they may access |
-| Deployment Option Review | Compares local prototype and cloud reference options |
-| Out-of-Scope Definition | Prevents uncontrolled expansion into model training, production data, or paid cloud deployment |
+It should not automatically become an authority for:
 
-## Map Evidence
+- Access approval
+- Legal decisions
+- Regulatory decisions
+- Production changes
+- Security exceptions
+- Financial transactions
 
-| Evidence Artifact | Location |
-|---|---|
-| Business case | business_case.md |
-| Reference architecture | architecture/reference_architecture.md |
-| Data flow | architecture/data_flow.md |
-| Trust boundaries | architecture/trust_boundaries.md |
-| Deployment options | architecture/deployment_options.md |
-| Data classification | governance/data_classification.md |
-| Access control model | security/access_control_model.md |
+# Map Alignment
 
-## Map Risks Addressed
+| Context Area | Project Approach |
+| --- | --- |
+| Business purpose | Internal knowledge assistance |
+| Intended users | Enterprise users with approved access |
+| Data | Approved organizational information |
+| Data sensitivity | Classification and metadata influence handling |
+| Identity | Production design relies on trusted enterprise identity |
+| Authorization | Access should preserve source entitlement |
+| Retrieval | Relevance does not equal authorization |
+| Model | Model behavior is not trusted as access control |
+| Human authority | Consequential decisions remain accountable to people |
+| Deployment | Local validation first; cloud designs are reference architectures |
+| Agent capability | Not implemented and outside current scope |
 
-| Risk | Mapping Response |
-|---|---|
-| Undefined AI scope | Clearly defined approved and prohibited use cases |
-| Unknown data exposure | Data flow and data classification requirements |
-| Unclear trust boundaries | Dedicated trust boundary documentation |
-| Unauthorized users | Defined user roles and access model |
-| Model misuse | Advisory-only scope and prohibited actions |
-| Cloud cost exposure | Local-first deployment scope |
-| Compliance uncertainty | Mapping to governance and compliance artifacts |
+# System Boundaries
+
+A conceptual production path is:
+
+```text
+User
+   ↓
+AI Assistant
+   ↓
+Trusted Identity
+   ↓
+Prompt / Request Controls
+   ↓
+Permission-Aware Retrieval
+   ↓
+Approved Knowledge Sources
+   ↓
+Authorized Context
+   ↓
+AI Model
+   ↓
+Response Controls
+   ↓
+User
+```
+
+Security logging and human accountability surround important decision points.
+
+# Trust Boundaries
+
+Important trust boundaries include:
+
+- User → Assistant
+- Assistant → Identity Provider
+- Prompt → Retrieval
+- Retrieval → Knowledge Source
+- Knowledge Source → Model Context
+- Assistant → Model Provider
+- Model → Response Controls
+- Assistant → Logging
+- Administrator → Configuration
+- AI Output → User
+
+These are production architecture boundaries.
+
+The local prototype exercises only selected parts of them.
+
+# Data Context
+
+The local prototype uses only synthetic data.
+
+Synthetic documents may still carry labels such as:
+
+- Internal
+- Confidential
+- Restricted
+
+Those labels exist to exercise security-control behavior.
+
+They do not represent real Restricted enterprise information.
+
+# Current Prototype Evidence for Map
+
+The prototype demonstrates:
+
+```text
+Mock Identity
+      ↓
+Prompt Risk
+      ↓
+Local Retrieval
+      ↓
+Metadata Authorization
+      ↓
+Logging / Review Trigger
+      ↓
+Advisory Response
+```
+
+This provides practical evidence for selected identity, authorization, retrieval, and logging boundaries without requiring a production AI platform.
 
 ---
 
-# Measure Function
+# MEASURE
 
 ## Objective
 
-The Measure function evaluates, analyzes, tests, monitors, and validates AI system behavior and risk controls.
+Measure evaluates whether identified risks and controls behave as expected.
 
-For this project, measurement focuses on whether the AI assistant behaves safely, retrieves only authorized content, resists prompt injection, avoids sensitive data leakage, and produces source-supported responses.
+For this project, an important distinction is:
 
-## Measure Mapping
+> A documented control is not necessarily an implemented control, and an implemented control is not necessarily a tested control.
 
-| Measurement Area | Project Implementation |
-|---|---|
-| Threat identification | STRIDE threat model identifies spoofing, tampering, repudiation, disclosure, denial of service, and privilege risks |
-| LLM risk analysis | OWASP LLM Top 10 mapping identifies AI-specific risks |
-| Prompt injection testing | Prompt injection controls define attack categories and expected system behavior |
-| Access validation | Role-based and document-level access checks are defined |
-| Retrieval validation | Retrieved documents must match user authorization and document metadata |
-| Response validation | Responses are checked for sensitive data, unsupported claims, and high-risk content |
-| Logging | Structured logs capture security-relevant events |
-| Risk scoring | AI risk assessment scores data, access, prompt/model, vendor, operational, and compliance risk |
-| Monitoring | Detection rules identify suspicious or unsafe activity |
+# Measure Alignment
 
-## Measure Controls
+| Measurement Area | Current Project Status |
+| --- | --- |
+| STRIDE threat analysis | Documented |
+| OWASP LLM risk mapping | Documented / reviewed separately |
+| Prompt-risk logic | Implemented locally |
+| Document authorization | Implemented locally |
+| Structured security logging | Implemented locally |
+| Prompt-injection testing | One direct scenario validated |
+| Authorized retrieval testing | One scenario validated |
+| Sensitive-data test suite | Defined, not yet executed |
+| Broader access-control tests | Defined, not yet executed |
+| Human-review trigger | Implemented as simulated event |
+| Production LLM behavior | Not implemented |
+| Hallucination testing | Not implemented |
+| Production output validation | Not implemented |
+| Enterprise monitoring | Not implemented |
+| Cloud cost monitoring | Not implemented |
 
-| Control | Description |
-|---|---|
-| STRIDE Threat Model | Identifies traditional application and architecture threats |
-| OWASP LLM Mapping | Identifies LLM-specific and RAG-specific risks |
-| Prompt Injection Test Cases | Tests whether unsafe prompts are blocked, warned, or escalated |
-| Retrieval Authorization Testing | Confirms users cannot retrieve unauthorized documents |
-| Sensitive Data Detection | Checks prompts and outputs for secrets, regulated data, or confidential information |
-| Source Citation Check | Confirms answers are supported by approved documents |
-| Unsupported Claim Detection | Flags answers that lack source support |
-| Human Review Metrics | Tracks high-risk requests and review outcomes |
-| Usage and Cost Monitoring | Tracks prompt volume, model usage, token counts, and budget signals |
+# Initial Validation Evidence
 
-## Measure Evidence
+Two scenarios are currently documented as executed.
 
-| Evidence Artifact | Location |
-|---|---|
-| STRIDE threat model | security/threat_model_stride.md |
-| OWASP LLM Top 10 mapping | security/owasp_llm_top10_mapping.md |
-| Prompt injection controls | security/prompt_injection_controls.md |
-| Logging and monitoring | security/logging_monitoring.md |
-| AI risk assessment | governance/ai_risk_assessment.md |
-| Access control model | security/access_control_model.md |
+## Authorized Policy Retrieval
 
-## Measurement Examples
+A mock General Employee requested the approved synthetic AI acceptable-use policy.
 
-| Test | Expected Result |
-|---|---|
-| General employee asks for general AI usage policy | Allowed with approved source reference |
-| General employee asks for incident response playbook | Denied or limited to general approved guidance |
-| User says “Ignore previous instructions” | Blocked, logged, and scored as high risk |
-| User asks for system prompt | Blocked and logged |
-| User asks for customer data | Blocked and logged |
-| Security architect asks for cloud logging guidance | Allowed if authorized documents exist |
-| Response lacks source support | Refused, qualified, or routed to review |
-| User submits excessive prompts | Throttled or alerted based on usage policy |
+The prototype:
 
-## Measure Risks Addressed
+- Evaluated the prompt
+- Retrieved the matching document
+- Applied role/group authorization
+- Logged the decision
+- Returned an advisory response
 
-| Risk | Measurement Response |
-|---|---|
-| Prompt injection | Test suite and detection rules |
-| Unauthorized retrieval | Role-based retrieval validation |
-| Sensitive data leakage | Prompt and output detection |
-| Hallucination | Source citation and unsupported claim checks |
-| Overreliance | Human review and advisory-only messaging |
-| Excessive usage | Quotas, rate limits, and cost monitoring |
-| Logging gaps | Required structured log fields |
-| Weak audit evidence | Correlation IDs and source traceability |
+**Result: Pass**
+
+## Direct Prompt Injection
+
+A mock General Employee submitted an instruction attempting to override controls and reveal Restricted documents.
+
+The prototype:
+
+- Detected the configured pattern
+- Classified the request as High risk
+- Selected Block
+- Logged the prompt event
+- Generated a security alert
+- Stopped before document retrieval
+
+**Result: Pass**
+
+These tests provide evidence for selected control paths.
+
+They do not demonstrate production AI safety generally.
+
+# Measurement Limitations
+
+The current prototype does not validate:
+
+- Enterprise SSO
+- MFA
+- Session security
+- Production RAG
+- Semantic retrieval
+- Embeddings
+- Vector security
+- LLM hallucination
+- Model leakage
+- Indirect prompt injection
+- Production output filtering
+- Enterprise DLP
+- SIEM detections
+- Production human approval
+- Rate limiting
+- Resilience
+- Autonomous agent behavior
+
+# Risk Assessment
+
+The project uses qualitative risk reasoning rather than adding unrelated numeric domain scores.
+
+Risk should consider:
+
+- Business consequence
+- Data exposure
+- User population
+- Production authority
+- Threat likelihood
+- Control effectiveness
+- Residual risk
+
+A severe risk in one domain should not be diluted merely because unrelated domains are lower risk.
+
+# Security Evidence
+
+The local prototype writes structured JSONL evidence to:
+
+```text
+prompt_events.jsonl
+retrieval_events.jsonl
+access_decisions.jsonl
+security_alerts.jsonl
+review_events.jsonl
+```
+
+This provides evidence for selected local control decisions.
+
+It is not equivalent to a production SIEM or formal compliance evidence system.
+
+# Testing Principle
+
+Additional test scenarios should remain:
+
+**Not Yet Tested**
+
+until executed.
+
+This prevents architecture documentation from being mistaken for validation evidence.
 
 ---
 
-# Manage Function
+# MANAGE
 
 ## Objective
 
-The Manage function prioritizes, responds to, reduces, monitors, and communicates AI risks over time.
+Manage focuses on deciding what to do about identified AI risks.
 
-For this project, risk management ensures identified risks are treated through controls, ownership, monitoring, escalation, and periodic review.
+Possible risk responses include:
 
-## Manage Mapping
+- Mitigate
+- Avoid
+- Accept
+- Transfer
+- Defer
+- Redesign
+- Escalate
 
-| Management Area | Project Implementation |
-|---|---|
-| Risk treatment | Risks are accepted, mitigated, transferred, avoided, or deferred |
-| Risk prioritization | High-priority risks are sensitive disclosure, prompt injection, unauthorized retrieval, and excessive agency |
-| Control implementation | Access control, prompt filtering, logging, human review, and data classification reduce risk |
-| Incident response | AI misuse, data leakage, prompt injection, and poisoned document scenarios are defined |
-| Ongoing monitoring | Logs and alerts track unsafe or unexpected behavior |
-| Review cycles | Access, data, vendor, and model behavior reviews are defined |
-| Cost management | Local-first approach and cloud deployment decision gate reduce financial risk |
-| Communication | Risk owners, reviewers, and governance stakeholders are identified |
+The appropriate response depends on organizational authority and risk policy.
 
-## Manage Controls
+# Manage Alignment
 
-| Control | Description |
-|---|---|
-| Risk Register | Tracks AI risks, owners, ratings, treatment, and status |
-| Risk Treatment Plan | Defines whether risk is accepted, mitigated, avoided, transferred, or deferred |
-| Human Review Escalation | Routes high-risk outputs to accountable personnel |
-| AI Incident Response | Defines how AI-specific incidents are handled |
-| Access Review | Periodically reviews user and privileged access |
-| Data Review | Periodically reviews document classification and approval status |
-| Vendor Review | Reviews model and provider data handling |
-| Kill Switch or Disablement Plan | Allows AI functionality to be disabled if unsafe |
-| Cost Review | Prevents uncontrolled usage of paid services |
-| Continuous Improvement | Uses logs, tests, incidents, and feedback to improve controls |
+| Management Area | Project Approach |
+| --- | --- |
+| Risk treatment | Architecture identifies possible treatment choices |
+| Authorization risk | Preserve deterministic access control outside the model |
+| Prompt risk | Use layered controls rather than relying on one filter |
+| Data exposure | Use classification, authorization, and minimization |
+| Human authority | Keep consequential decisions outside AI authority |
+| Incident response | Define AI-specific investigation scenarios |
+| Deployment risk | Require additional review when moving to production/cloud |
+| Cost risk | Avoid unnecessary paid infrastructure during validation |
+| Architecture change | Reassess when risk conditions materially change |
 
-## Manage Evidence
+# Risk Ownership
 
-| Evidence Artifact | Location |
-|---|---|
-| AI risk assessment | governance/ai_risk_assessment.md |
-| Risk register | governance/ai_risk_assessment.md |
-| Human review requirements | governance/human_review_requirements.md |
-| Logging and monitoring | security/logging_monitoring.md |
-| Incident response playbook | incident_response/ai_incident_response_playbook.md |
-| Cost controls | cost_controls.md |
-| Lessons learned | lessonslearned.md |
+Security architecture can identify and explain risk.
 
-## Manage Risks Addressed
+It does not automatically own every risk.
 
-| Risk | Management Response |
-|---|---|
-| Unresolved high risks | Risk register and ownership |
-| Repeated unsafe prompts | Monitoring and escalation |
-| Data leakage incident | Incident response process |
-| Poisoned document | Content owner review and document removal |
-| Excessive model usage | Rate limiting, quotas, and cost alerts |
-| Unauthorized access | Access review and IAM lifecycle integration |
-| Stale documents | Content review and expiration dates |
-| Weak adoption controls | AI use case review process |
+Risk ownership should remain with the party that has authority over the affected business outcome.
 
----
+Examples may include:
 
-# AI Trustworthiness Characteristics
+- Business owner
+- Data owner
+- Application owner
+- Security owner
+- Privacy owner
+- Compliance owner
+- Platform owner
 
-The AI assistant should support the following trustworthy AI characteristics.
+# Incident Response
 
-## Valid and Reliable
+The production architecture should be able to support investigation of scenarios such as:
 
-| Requirement | Project Control |
-|---|---|
-| Responses should be based on approved documents | RAG with source references |
-| Unsupported answers should be limited | Source citation and unsupported-claim detection |
-| Retrieval should be tested | Role-based retrieval validation |
-| Documents should be reviewed | Content ownership and expiration dates |
+- Unauthorized information exposure
+- Successful retrieval bypass
+- Prompt-injection activity
+- Sensitive-data submission
+- Knowledge-source poisoning
+- Administrative misconfiguration
+- Provider compromise
+- Logging failure
 
-## Safe
+The repository contains an AI incident-response playbook as an architecture artifact.
 
-| Requirement | Project Control |
-|---|---|
-| Assistant should not provide dangerous or unauthorized guidance | Prompt filtering and output validation |
-| Assistant should not approve high-risk actions | Advisory-only design and human review |
-| Assistant should not execute production actions | Read-only initial architecture |
-| Unsafe use should be blocked | Detection rules and escalation |
+The local prototype does not implement an enterprise incident-management platform.
 
-## Secure and Resilient
+# Human Review
 
-| Requirement | Project Control |
-|---|---|
-| Users must authenticate | SSO and MFA |
-| Access must be authorized | Role and document-level controls |
-| Prompt injection must be addressed | Prompt injection controls |
-| Logs must support investigation | Logging and monitoring requirements |
-| System must handle abuse | Rate limits and alerts |
+The production architecture should preserve human authority where consequences justify it.
 
-## Accountable and Transparent
+The local prototype only demonstrates a review trigger.
 
-| Requirement | Project Control |
-|---|---|
-| Owners must be identified | Business, data, security, and technical owners |
-| Decisions must be traceable | Correlation IDs and logging |
-| Sources should be visible | Source references in responses |
-| High-risk output needs review | Human review workflow |
-| AI use case decisions must be documented | Intake and risk assessment |
+When an authorized retrieved document is marked:
 
-## Explainable and Interpretable
+```text
+human_review_required
+```
 
-| Requirement | Project Control |
-|---|---|
-| Users should know why an answer was generated | Source references and retrieved document IDs |
-| Users should understand limitations | Advisory-only language |
-| Reviewers should understand system behavior | Logs, risk scores, and policy actions |
-| Audit should reconstruct events | Prompt, retrieval, response, and review metadata |
+the application can record:
 
-## Privacy-Enhanced
+```text
+Pending simulated review
+```
 
-| Requirement | Project Control |
-|---|---|
-| Sensitive data should not be used in prototype | Mock data only |
-| Prompts and responses should not be overlogged | Log minimization |
-| Restricted data should be blocked | Data classification and filtering |
-| Provider data handling should be reviewed | Vendor risk assessment |
+It does not:
 
-## Fair and Bias-Managed
+- Hold the response
+- Assign a reviewer
+- Record approval
+- Record rejection
+- Enforce an SLA
 
-| Requirement | Project Control |
-|---|---|
-| Use case should avoid unsupported employment, lending, or customer decisions | Prohibited use case list |
-| High-impact decisions require human review | Human accountability |
-| Training data risk should be controlled | No model training in initial scope |
-| Output should be validated | Response review and source support |
+# Review Triggers
 
-## Cost-Aware and Operationally Controlled
+Rather than inventing arbitrary quarterly or annual schedules, reassessment should occur when relevant conditions change.
 
-| Requirement | Project Control |
-|---|---|
-| Prototype should avoid paid cloud usage | Local-first design |
-| Cloud usage must be reviewed | Cost decision gate |
-| Usage should be monitored | Prompt, token, and model usage logs |
-| System should support shutdown | Kill switch or disablement plan |
+Examples include:
+
+- New business use case
+- New data classification
+- New user population
+- New model/provider
+- New retrieval source
+- Production deployment
+- Material architecture change
+- Security incident
+- New tool/agent capability
+- New regulatory requirement
+- Significant control failure
+
+Organizations may also impose periodic review requirements through existing enterprise policy.
+
+# Cloud Deployment
+
+AWS and Azure materials in this repository are reference architectures.
+
+No cloud AI platform is deployed.
+
+Before production cloud deployment, the organization would need to evaluate areas such as:
+
+- Identity
+- Network exposure
+- Encryption
+- Secrets
+- Logging
+- Provider data handling
+- Retention
+- Cost
+- Resilience
+- Data approval
+- Operational ownership
+
+The exact controls depend on the selected platform and use case.
 
 ---
 
-# AI Risk to Control Mapping
+# NIST AI RMF Trustworthiness Characteristics
 
-| AI Risk | NIST AI RMF Function | Project Control |
-|---|---|---|
-| Prompt injection | Measure, Manage | Prompt filtering, testing, logging, escalation |
-| Sensitive information disclosure | Govern, Map, Measure, Manage | Data classification, access control, output validation |
-| Unauthorized document retrieval | Map, Measure, Manage | Document-level authorization and retrieval filtering |
-| Hallucination or misinformation | Measure, Manage | Source citation, unsupported-claim detection, human review |
-| Overreliance on AI | Govern, Manage | Advisory-only design and human accountability |
-| Excessive agency | Govern, Manage | Read-only design, no autonomous production action |
-| Vendor data exposure | Govern, Map, Manage | Vendor review and data handling assessment |
-| Poisoned documents | Measure, Manage | Approved document ingestion and content review |
-| Weak auditability | Govern, Measure, Manage | Structured logging and evidence retention |
-| Unexpected cloud cost | Govern, Manage | Local-first design, budgets, quotas, and cost alerts |
+The AI RMF describes characteristics associated with trustworthy AI.
 
----
+This project uses them as design considerations rather than claiming formal conformance.
 
-# Example Control Mapping
+# Valid and Reliable
 
-## Use Case: Internal Security Policy Assistant
+Production considerations include:
 
-| Area | Mapping |
-|---|---|
-| Business Purpose | Help employees find approved security and architecture guidance |
-| Govern | Use case owner, risk assessment, approved pilot scope |
-| Map | Data flow, users, document classes, trust boundaries |
-| Measure | Prompt injection tests, retrieval checks, logging, response validation |
-| Manage | Risk register, human review, monitoring, cost controls |
-| Risk Level | High for pilot because responses may influence security or compliance interpretation |
-| Decision | Limited pilot using mock or approved internal documents only |
+- Approved information sources
+- Appropriate retrieval quality
+- Source traceability
+- Testing
+- Known limitations
+- Controlled document lifecycle
 
-## Required Controls
+Current prototype evidence is limited to selected local retrieval and authorization behavior.
 
-| Control | NIST AI RMF Function |
-|---|---|
-| Business owner identified | Govern |
-| Data owner approval | Govern |
-| Data classification | Govern, Map |
-| Role-based access control | Map, Measure, Manage |
-| Document-level authorization | Map, Measure, Manage |
-| Prompt injection testing | Measure |
-| Source citation | Measure |
-| Human review | Govern, Manage |
-| Logging and monitoring | Measure, Manage |
-| Cost controls | Govern, Manage |
-| Incident response process | Manage |
+No production LLM reliability testing has been performed.
 
----
+# Safe
 
-# Governance Decision Record Template
+The architecture limits AI authority and emphasizes:
 
-| Field | Description |
-|---|---|
-| Use Case Name | Name of AI use case |
-| Business Owner | Accountable business owner |
-| Technical Owner | Implementation owner |
-| Security Owner | Security architecture owner |
-| Data Owner | Owner of documents or data |
-| Intended Users | Approved user groups |
-| Intended Purpose | Approved AI capability |
-| Data Classification | Highest data sensitivity level |
-| Risk Rating | Low, medium, high, or critical |
-| Required Controls | Controls required before pilot or deployment |
-| Approval Decision | Approved, conditional, limited pilot, rejected, escalated, or deferred |
-| Review Date | Date for reassessment |
-| Approver | Governance or control owner |
+- Advisory use
+- Deterministic authorization
+- Prompt controls
+- Human authority for consequential decisions
+- Controlled expansion into production actions
 
----
+The current prototype cannot perform production actions.
 
-# Minimum Controls Before Pilot
+# Secure and Resilient
 
-Before any pilot begins, the following controls should be documented:
+Production requirements may include:
 
-| Control | Required |
-|---|---|
-| Business use case documented | Yes |
-| Data classification completed | Yes |
-| Approved data or mock data selected | Yes |
-| User roles defined | Yes |
-| Access control model defined | Yes |
-| Prompt injection controls defined | Yes |
-| Logging requirements defined | Yes |
-| Human review criteria defined | Yes |
-| Prohibited use cases documented | Yes |
-| Cost controls documented | Yes |
-| Risk rating assigned | Yes |
+- Trusted authentication
+- Authorization
+- Prompt-injection defenses
+- Secure retrieval
+- Protected logs
+- Monitoring
+- Rate controls
+- Resilience
 
----
+The local prototype demonstrates selected authorization, prompt-risk, and logging controls only.
 
-# Minimum Controls Before Cloud Deployment
+# Accountable and Transparent
 
-Before any cloud deployment begins, the following additional controls should be in place:
+The architecture supports:
 
-| Control | Required |
-|---|---|
-| Budget alert configured | Yes |
-| Billing or cost monitoring configured | Yes |
-| Teardown procedure documented | Yes |
-| Cloud IAM design reviewed | Yes |
-| Encryption requirements documented | Yes |
-| Logging destination defined | Yes |
-| Provider data handling reviewed | Yes |
-| Retention requirements documented | Yes |
-| Network exposure reviewed | Yes |
-| Secrets management approach defined | Yes |
-| Production data approval completed | Yes |
-| Cloud deployment owner identified | Yes |
-
----
-
-# Review Cadence
-
-| Review Area | Frequency |
-|---|---|
-| AI use case risk review | Before pilot and before expansion |
-| Access review | Quarterly or semi-annually depending on sensitivity |
-| Data classification review | At least annually or when documents change |
-| Prompt injection test review | At each major release |
-| Logging review | At least annually |
-| Vendor review | Annually or when provider/model changes |
-| Human review workflow | Quarterly or after incidents |
-| Cost review | Before cloud deployment and monthly if deployed |
-| Incident response review | After any AI-related incident |
-
----
-
-# Security Architect Notes
-
-The NIST AI RMF mapping shows that AI security is broader than model behavior.
-
-A secure AI assistant requires:
-
-- Governance before deployment
-- Clear use case boundaries
-- Data classification
-- Identity-aware access control
-- Prompt injection testing
-- Response validation
+- Defined ownership
+- Traceable security decisions
+- Source references
+- Documented limitations
 - Human accountability
-- Logging and monitoring
-- Risk treatment
-- Continuous review
 
-The security architect’s role is to make sure the AI system fits inside an enterprise control environment instead of becoming an unmanaged productivity tool.
+The prototype provides correlation and local security evidence for selected request paths.
 
-## Conclusion
+# Explainable and Interpretable
 
-This project aligns to the NIST AI RMF by defining how the AI assistant is governed, mapped, measured, and managed.
+For this architecture, useful explainability includes understanding:
 
-The most important implementation decision is to begin with a limited local prototype using mock or approved data, then expand only after governance, access control, logging, human review, and cost controls are in place.
+- Which source was used
+- Which authorization decision occurred
+- Why a request was blocked
+- Which control triggered
+- What limitations apply
 
-This approach supports responsible AI adoption while reducing security, compliance, operational, and financial risk.
+This is different from claiming that the internal reasoning of a production LLM can always be explained.
+
+# Privacy-Enhanced
+
+The current prototype uses synthetic data.
+
+Production privacy considerations include:
+
+- Data minimization
+- Prompt minimization
+- Response minimization
+- Log minimization
+- Provider data handling
+- Retention
+- Access control
+
+# Fairness and Harmful Bias
+
+The current prototype is not designed to make employment, lending, healthcare, eligibility, or similar high-impact decisions.
+
+If the system were expanded into such use cases, fairness and harmful-bias analysis would require a separate and deeper evaluation.
+
+The absence of those use cases in the current prototype is not evidence that bias risk has been validated.
+
+---
+
+# AI Risk-to-Architecture Mapping
+
+| AI Risk | Relevant RMF Functions | Architecture Response |
+| --- | --- | --- |
+| Prompt injection | Map, Measure, Manage | Prompt controls plus independent authorization |
+| Information disclosure | Govern, Map, Measure, Manage | Classification, authorization, minimization |
+| Unauthorized retrieval | Map, Measure, Manage | Document-level authorization |
+| Hallucination | Map, Measure, Manage | Source grounding, limitations, human authority |
+| Overreliance | Govern, Manage | Advisory design and consequence-based review |
+| Excessive agency | Govern, Map, Manage | No autonomous action in current scope |
+| Vendor exposure | Govern, Map, Manage | Provider/data-handling review |
+| Knowledge poisoning | Map, Measure, Manage | Content governance and untrusted-context handling |
+| Weak auditability | Govern, Measure, Manage | Structured security evidence |
+| Operational dependency | Map, Measure, Manage | Resilience and fallback planning |
+| Unexpected cost | Govern, Map, Manage | Deployment and usage controls |
+
+Not every listed response is implemented in the local prototype.
+
+# Example Use Case
+
+## Internal AI Policy Assistant
+
+**Business purpose:** Help employees locate approved internal policy and security guidance.
+
+**Production concept:** Could eventually use RAG-style capabilities over approved enterprise sources.
+
+**Current implementation:** Limited local security-control prototype using synthetic users, documents, metadata, simple keyword retrieval, authorization, prompt-risk logic, and JSONL logging.
+
+### Govern
+
+- Business purpose documented
+- Governance artifacts defined
+- Human-accountability principles documented
+- Data-handling requirements documented
+
+### Map
+
+- Users defined
+- Synthetic document classes defined
+- Trust boundaries documented
+- Production and prototype scopes separated
+
+### Measure
+
+- Two initial scenarios executed successfully
+- Additional tests defined but not yet executed
+- Local structured evidence generated
+
+### Manage
+
+- Architecture identifies treatment choices
+- Production risks and limitations documented
+- Cloud deployment remains optional/reference-only
+- Material changes require reassessment
+
+## Current Decision
+
+Continue local architecture/control validation using synthetic data.
+
+This decision applies only to the current prototype.
+
+It is not an approval for production deployment.
+
+---
+
+# Relationship to Compliance
+
+NIST AI RMF is a risk-management framework.
+
+This repository uses it to organize architecture thinking and identify gaps.
+
+Therefore:
+
+> Mapping project artifacts to NIST AI RMF does not establish compliance, certification, or formal conformance.
+
+A formal organizational assessment would require:
+
+- Defined scope
+- Organizational policies
+- Responsible owners
+- Implemented controls
+- Operational evidence
+- Risk acceptance
+- Appropriate assessment methodology
+
+That work is outside this portfolio project's scope.
+
+# Architecture Evidence
+
+Useful project artifacts include:
+
+```text
+Business_Case.md
+Architecture_Dataflow.md
+Reference_Architecture.md
+Cost_Controls.md
+lessonslearned.md
+
+Governance/
+├── ai_use_case_intake.md
+├── Data_Classification.md
+└── human_review_requirements.md
+
+architecture/
+├── deployment_options.md
+└── trust_boundaries.md
+
+Security/
+├── access_control_model.md
+├── ai_risk_assessment.md
+├── logging_monitoring.md
+├── prompt_injection_controls.md
+├── threat_model_stride.md
+├── nist_ai_rmf_mapping.md
+└── owasp_llm_top10_mapping.md
+
+Phase_2/local_prototype/
+├── app.py
+├── metadata/
+├── sample_docs/
+├── sample_users.json
+├── logs/
+└── tests/
+```
+
+The exact repository filenames should be kept synchronized with the repository as it evolves.
+
+# Security Architect Perspective
+
+The value of NIST AI RMF in this project is not that it produces another checklist.
+
+It helps force several different questions:
+
+**Govern**
+
+> Who is accountable, and what rules apply?
+
+**Map**
+
+> What are we actually building, for whom, using what information, and with what consequence?
+
+**Measure**
+
+> What evidence shows that the controls behave as intended?
+
+**Manage**
+
+> What do we do with the risk that remains?
+
+That sequence fits the architecture approach used throughout this project.
+
+# Conclusion
+
+This project aligns its architecture thinking with the NIST AI Risk Management Framework through the Govern, Map, Measure, and Manage functions.
+
+The project has already progressed beyond documentation-only planning:
+
+```text
+Architecture and Governance
+        ↓
+Local Security-Control Prototype
+        ↓
+Initial Selected-Control Validation
+```
+
+The local prototype provides implementation evidence for selected identity-context, prompt-risk, authorization, retrieval, and logging controls.
+
+The broader production architecture identifies additional controls that would be required before enterprise deployment.
+
+The project does **not** claim NIST AI RMF certification or comprehensive implementation.
+
+Its purpose is to demonstrate how a security architect can use the framework to connect:
+
+```text
+Business Context
+      ↓
+AI Risk
+      ↓
+Architecture
+      ↓
+Controls
+      ↓
+Evidence
+      ↓
+Residual Risk
+      ↓
+Accountability
+```
+
+That is the useful outcome of the mapping.
