@@ -1,672 +1,541 @@
-# NIST 800-53 Control Mapping
+# NIST SP 800-53 Security Control Mapping
 
 ## Purpose
 
-This document maps the secure enterprise AI assistant architecture to selected NIST SP 800-53 security and privacy controls.
+This document maps the enterprise AI security architecture in this repository to selected NIST SP 800-53 security and privacy control families.
 
-The purpose is to show how traditional security controls apply to an internal AI assistant that uses Retrieval-Augmented Generation to answer employee questions from approved internal documents.
+The purpose is to show how established enterprise security controls continue to apply when AI and Retrieval-Augmented Generation are introduced into an information-access workflow.
 
-This mapping focuses on security architect-level control alignment, not formal certification or authorization.
+This is a **security architecture mapping**.
 
-## Scope
+> It is not a NIST SP 800-53 assessment, authorization package, control implementation statement, or claim that every referenced control has been satisfied.
 
-This mapping applies to:
+The mapping distinguishes between:
 
-- Internal AI assistant architecture
-- Retrieval-Augmented Generation workflows
-- Identity and access control
-- Data classification
-- Prompt injection controls
-- Document-level authorization
-- Logging and monitoring
-- Human review
-- Incident response
-- Vendor and supply chain risk
-- Cost and operational governance
-- Local prototype and future cloud reference designs
+1. Architecture requirements.
+2. Controls demonstrated by the local prototype.
+3. Production controls that would require enterprise implementation.
 
-## Project Context
+# Project Context
 
-The AI assistant is designed for a regulated organization that wants to let employees ask questions against approved internal documents while preventing unauthorized access, sensitive data exposure, prompt injection, unsafe output, and weak auditability.
+The production concept is an internal AI assistant that could eventually use Retrieval-Augmented Generation to help employees find and understand approved enterprise information.
 
-The initial implementation is documentation-first and local-first.
+The current project has progressed through:
 
-The system should not process real customer data, regulated data, production secrets, or confidential employer documents during the initial phase.
+```text
+Architecture and Governance
+        ↓
+Local Security-Control Prototype
+        ↓
+Selected Control Validation
+```
 
-## Mapping Summary
+The local prototype uses:
 
-| NIST 800-53 Family | Relevance to AI Assistant |
-|---|---|
-| AC - Access Control | Controls user access, role enforcement, document-level authorization, least privilege |
-| AU - Audit and Accountability | Supports logging, monitoring, traceability, and investigation |
-| AT - Awareness and Training | Supports user education for approved and prohibited AI use |
-| CA - Assessment, Authorization, and Monitoring | Supports ongoing risk assessment and control validation |
-| CM - Configuration Management | Controls changes to prompts, models, indexes, guardrails, and access rules |
-| CP - Contingency Planning | Supports fallback procedures when AI service is unavailable |
-| IA - Identification and Authentication | Supports SSO, MFA, and verified user identity |
-| IR - Incident Response | Supports AI misuse, data exposure, and prompt injection incident handling |
-| PL - Planning | Supports documented security architecture and governance planning |
-| RA - Risk Assessment | Supports AI risk assessment, threat modeling, and vendor review |
-| SA - System and Services Acquisition | Supports vendor, model, and supply chain review |
-| SC - System and Communications Protection | Supports data protection, isolation, encryption, and boundary controls |
-| SI - System and Information Integrity | Supports prompt filtering, output validation, monitoring, and flaw remediation |
-| SR - Supply Chain Risk Management | Supports model, provider, dependency, and vendor risk review |
+- Synthetic users
+- Synthetic documents
+- Mock roles and groups
+- Document metadata
+- Simple keyword retrieval
+- Pattern-based prompt-risk evaluation
+- Document authorization
+- Structured JSONL logging
+- Advisory response generation
+- Simulated human-review triggers
 
----
+It does not use:
 
-# Access Control Family
+- Production LLM
+- Embeddings
+- Vector database
+- Enterprise SSO
+- MFA
+- Production SIEM
+- Cloud AI
+- External model provider
+- Formal approval workflow
+- Real enterprise data
+- Autonomous tools or agents
 
-## AC-2: Account Management
+# Core Security Principle
 
-### Control Relevance
+> AI should operate inside existing enterprise security boundaries rather than create a new path around them.
 
-The AI assistant must manage which users are allowed to access the system and what role or group-based permissions apply.
+The model should not determine:
 
-### Project Implementation
-
-- Require enterprise identity integration for production use
-- Define user roles such as General Employee, Engineer, Security Architect, IAM Analyst, Compliance Analyst, Reviewer, and Administrator
-- Remove access when users change roles or leave the organization
-- Review access periodically
-- Separate administrator access from document content access
-
-### Supporting Artifacts
-
-- security/access_control_model.md
-- governance/ai_use_case_intake.md
-- governance/human_review_requirements.md
-
-## AC-3: Access Enforcement
-
-### Control Relevance
-
-The system must enforce approved access authorizations before users retrieve documents or receive AI-generated responses.
-
-### Project Implementation
-
-- Enforce role-based access control
-- Enforce document-level authorization
-- Apply metadata filtering before retrieval
-- Re-check authorization before context is sent to the model
-- Deny retrieval when classification or ownership metadata is missing
-
-### Supporting Artifacts
-
-- security/access_control_model.md
-- governance/data_classification.md
-- architecture/trust_boundaries.md
-
-## AC-5: Separation of Duties
-
-### Control Relevance
-
-Administrative access, document ownership, human review, and ordinary user access should be separated.
-
-### Project Implementation
-
-- AI system administrators do not automatically receive access to all document content
-- Content owners approve document ingestion
-- Security reviewers review high-risk AI output
-- IAM owners review access-related decisions
-- Compliance or legal teams review regulatory interpretations
-
-### Supporting Artifacts
-
-- security/access_control_model.md
-- governance/human_review_requirements.md
-
-## AC-6: Least Privilege
-
-### Control Relevance
-
-Users and administrators should receive only the access necessary for their role.
-
-### Project Implementation
-
-- Apply least privilege to user roles
-- Limit access to confidential and restricted documents
-- Restrict administrative functions
-- Restrict retrieval scope by classification and user role
-- Keep the initial AI assistant read-only
-
-### Supporting Artifacts
-
-- security/access_control_model.md
-- architecture/deployment_options.md
-- governance/data_classification.md
-
-## AC-16: Security and Privacy Attributes
-
-### Control Relevance
-
-The AI assistant depends on metadata attributes to enforce document-level authorization.
-
-### Project Implementation
-
-- Require document metadata such as classification, owner, source system, approved roles, approved groups, status, review date, and expiration date
-- Use metadata filters during retrieval
-- Deny ingestion or retrieval when metadata is missing
-- Preserve source document IDs and classifications in logs
-
-### Supporting Artifacts
-
-- governance/data_classification.md
-- security/access_control_model.md
-- security/logging_monitoring.md
-
-## AC-17: Remote Access
-
-### Control Relevance
-
-If the assistant is accessed remotely, remote access must be authenticated and controlled.
-
-### Project Implementation
-
-- Require SSO and MFA
-- Apply conditional access where appropriate
-- Avoid anonymous access
-- Log remote access and session metadata where appropriate
-- Use secure enterprise access patterns in any future deployment
-
-### Supporting Artifacts
-
-- security/access_control_model.md
-- architecture/deployment_options.md
-
----
-
-# Audit and Accountability Family
-
-## AU-2: Event Logging
-
-### Control Relevance
-
-The system must define which AI-related security and operational events are logged.
-
-### Project Implementation
-
-- Log prompt metadata
-- Log retrieval decisions
-- Log access decisions
-- Log blocked prompt injection attempts
-- Log sensitive data detections
-- Log human review events
-- Log administrative changes
-- Log model interaction metadata where appropriate
-
-### Supporting Artifacts
-
-- security/logging_monitoring.md
-- incident_response/ai_incident_response_playbook.md
-
-## AU-3: Content of Audit Records
-
-### Control Relevance
-
-Audit records must contain enough information to support investigation and accountability.
-
-### Project Implementation
-
-Recommended log fields include:
-
-- Event ID
-- Timestamp
-- User ID
-- User role
-- Session ID
-- Prompt risk score
-- Policy decision
-- Retrieved document IDs
-- Document classification
-- Response status
-- Reviewer ID
-- Correlation ID
-
-### Supporting Artifacts
-
-- security/logging_monitoring.md
-
-## AU-6: Audit Record Review, Analysis, and Reporting
-
-### Control Relevance
-
-AI assistant logs should be reviewed to detect misuse, data exposure, prompt injection attempts, and unauthorized retrieval.
-
-### Project Implementation
-
-- Define security monitoring use cases
-- Create alert categories for prompt injection, system prompt extraction, sensitive data submission, unauthorized retrieval, and excessive usage
-- Review alerts through security operations or governance workflows
-- Track high-risk events and remediation
-
-### Supporting Artifacts
-
-- security/logging_monitoring.md
-- incident_response/ai_incident_response_playbook.md
-
-## AU-8: Time Stamps
-
-### Control Relevance
-
-AI activity logs must include timestamps for investigation and event correlation.
-
-### Project Implementation
-
-- Include timestamps in prompt logs, retrieval logs, response logs, review logs, and administrative logs
-- Use correlation IDs to connect related workflow events
-- Preserve time sequencing for incident response
-
-### Supporting Artifacts
-
-- security/logging_monitoring.md
-- incident_response/ai_incident_response_playbook.md
-
-## AU-9: Protection of Audit Information
-
-### Control Relevance
-
-Logs may contain sensitive metadata, user activity, retrieved document IDs, or security events and must be protected.
-
-### Project Implementation
-
-- Restrict access to logs by role
-- Avoid full prompt and response logging by default
-- Redact sensitive values
-- Protect logs from unauthorized modification
-- Define retention and disposal rules
-- Separate operational logs from sensitive security investigation logs
-
-### Supporting Artifacts
-
-- security/logging_monitoring.md
-- governance/data_classification.md
-
-## AU-12: Audit Record Generation
-
-### Control Relevance
-
-The AI assistant should generate audit records for security-relevant activity.
-
-### Project Implementation
-
-- Generate logs for prompt submission, retrieval, response validation, access decisions, human review, and admin changes
-- Ensure logs support incident reconstruction
-- Include correlation IDs across workflow stages
-
-### Supporting Artifacts
-
-- security/logging_monitoring.md
-
----
-
-# Awareness and Training Family
-
-## AT-2: Literacy Training and Awareness
-
-### Control Relevance
-
-Users need training on approved AI usage, prohibited data entry, limitations of AI responses, and escalation expectations.
-
-### Project Implementation
-
-Users should be trained not to:
-
-- Enter customer data
-- Enter secrets or credentials
-- Treat AI output as final approval
-- Use AI to bypass policy
-- Submit restricted data without approval
-- Rely on unsupported answers for audit or compliance decisions
-
-### Supporting Artifacts
-
-- governance/ai_use_case_intake.md
-- governance/human_review_requirements.md
-- governance/data_classification.md
-
-## AT-3: Role-Based Training
-
-### Control Relevance
-
-Privileged users, reviewers, administrators, and content owners need role-specific training.
-
-### Project Implementation
-
-- Security reviewers understand review triggers and decision criteria
-- Content owners understand classification and ingestion approval
-- Administrators understand configuration, logging, and guardrail change management
-- IAM teams understand role and access review responsibilities
-- Compliance teams understand AI-generated evidence limitations
-
-### Supporting Artifacts
-
-- governance/human_review_requirements.md
-- governance/data_classification.md
-- security/access_control_model.md
-
----
-
-# Assessment, Authorization, and Monitoring Family
-
-## CA-2: Control Assessments
-
-### Control Relevance
-
-AI assistant controls should be assessed before pilot, before production, and after major changes.
-
-### Project Implementation
-
-Assess:
-
-- Access control
-- Prompt injection controls
-- Retrieval authorization
-- Logging
-- Human review workflow
-- Data classification
-- Incident response
-- Cost controls
-- Vendor and model risk
-
-### Supporting Artifacts
-
-- governance/ai_risk_assessment.md
-- security/threat_model_stride.md
-- security/owasp_llm_top10_mapping.md
-
-## CA-7: Continuous Monitoring
-
-### Control Relevance
-
-AI assistant risk must be monitored continuously after deployment.
-
-### Project Implementation
-
-- Monitor prompt injection attempts
-- Monitor unauthorized retrieval attempts
-- Monitor sensitive data detections
-- Monitor usage and cost spikes
-- Monitor review queue status
-- Monitor logging failures
-- Monitor administrative changes
-
-### Supporting Artifacts
-
-- security/logging_monitoring.md
-- incident_response/ai_incident_response_playbook.md
-
----
-
-# Configuration Management Family
-
-## CM-2: Baseline Configuration
-
-### Control Relevance
-
-The AI assistant should have a documented baseline configuration.
-
-### Project Implementation
-
-Document:
-
-- Approved model or local simulation approach
-- Approved document sources
-- User roles
-- Retrieval configuration
-- Prompt filtering rules
-- Response validation rules
+- User identity
+- Data entitlement
+- Risk acceptance
+- Security policy
+- Approval authority
 - Logging requirements
-- Human review rules
-- Cost controls
+- Production authorization
 
-### Supporting Artifacts
+# Selected NIST SP 800-53 Families
 
-- architecture/reference_architecture.md
-- architecture/deployment_options.md
-- security/prompt_injection_controls.md
+| Family | Relevance to the Architecture |
+| --- | --- |
+| AC — Access Control | User authorization, document entitlement, least privilege |
+| AU — Audit and Accountability | Security evidence, traceability, investigation |
+| AT — Awareness and Training | Appropriate AI use and limitations |
+| CA — Assessment, Authorization, and Monitoring | Control validation and reassessment |
+| CM — Configuration Management | Changes to access, prompts, retrieval, model/provider settings |
+| CP — Contingency Planning | Safe fallback when AI is unavailable or unsafe |
+| IA — Identification and Authentication | Trusted user and service identity |
+| IR — Incident Response | Handling AI-related security events |
+| PL — Planning | Security architecture, scope, boundaries |
+| RA — Risk Assessment | AI risk evaluation and threat modeling |
+| SA — System and Services Acquisition | Provider and service evaluation |
+| SC — System and Communications Protection | Data protection and trust boundaries |
+| SI — System and Information Integrity | Input handling, monitoring, integrity |
+| SR — Supply Chain Risk Management | Provider, dependency, and component risk |
 
-## CM-3: Configuration Change Control
+The presence of a family in this document does not mean every control in that family applies or has been implemented.
 
-### Control Relevance
+---
 
-Changes to AI configuration can introduce security risk.
+# AC — Access Control
 
-### Project Implementation
+## AC-2 — Account Management
 
-Require review for changes to:
+### Architecture Relevance
 
-- System prompts
-- Model provider or version
-- Retrieval indexes
-- Document ingestion rules
-- Access policies
-- Logging settings
-- Human review triggers
-- Guardrail rules
-- Cloud services
+A production AI assistant should use the organization's normal identity lifecycle.
 
-### Supporting Artifacts
+This may include:
 
-- architecture/trust_boundaries.md
-- security/logging_monitoring.md
-- incident_response/ai_incident_response_playbook.md
+- Account provisioning
+- Role assignment
+- Group membership
+- Deactivation
+- Access review
 
-## CM-6: Configuration Settings
+### Current Prototype
 
-### Control Relevance
+The local prototype uses static synthetic users.
 
-Security-relevant configuration settings must be defined and controlled.
+It does not implement enterprise account lifecycle management.
 
-### Project Implementation
+The architecture nevertheless assumes that production access would come from trusted enterprise identity.
 
-- Define deny-by-default retrieval behavior
-- Require metadata-based document filtering
-- Require source citation for supported responses
-- Define blocked prompt categories
-- Define restricted data handling
-- Define log retention and access rules
-- Define budget and cost thresholds before cloud deployment
+---
 
-### Supporting Artifacts
+## AC-3 — Access Enforcement
 
-- security/access_control_model.md
-- security/prompt_injection_controls.md
-- cost_controls.md
+### Architecture Relevance
 
-## CM-8: System Component Inventory
+Authorization should be enforced before unauthorized information reaches the AI context.
 
-### Control Relevance
+### Current Prototype Evidence
 
-The organization should understand the components that make up the AI assistant.
+The prototype implements:
 
-### Project Implementation
+- Role checks
+- Group checks
+- Document approval status
+- Document-level allow/deny behavior
 
-Track:
+The model or response-generation function does not grant access.
 
-- Application components
+### Limitation
+
+The current retrieval implementation selects top candidates before final authorization checks.
+
+A production design should integrate authorization more closely with retrieval.
+
+---
+
+## AC-5 — Separation of Duties
+
+### Architecture Relevance
+
+Important responsibilities should remain separate.
+
+Examples include:
+
+- Platform administration
+- Data ownership
+- Access approval
+- Security review
+- Audit access
+
+### Current Prototype Evidence
+
+The synthetic AI System Administrator role does not automatically receive Restricted document access.
+
+This demonstrates the principle:
+
+> Administrative privilege does not equal data entitlement.
+
+---
+
+## AC-6 — Least Privilege
+
+The production architecture should minimize:
+
+- User permissions
+- Administrative permissions
+- Service permissions
+- Retrieval scope
+- Tool permissions
+
+The current prototype is advisory and cannot perform production actions.
+
+This significantly limits agency.
+
+---
+
+## AC-16 — Security and Privacy Attributes
+
+Metadata can contribute to authorization decisions.
+
+The prototype uses attributes including:
+
+- Document owner
+- Classification
+- Allowed roles
+- Allowed groups
+- Approval status
+
+Additional fields such as review date and expiration date exist as metadata but are not currently enforced.
+
+---
+
+# AU — Audit and Accountability
+
+## AU-2 — Event Logging
+
+The local prototype generates structured event evidence for:
+
+```text
+prompt_events.jsonl
+retrieval_events.jsonl
+access_decisions.jsonl
+security_alerts.jsonl
+review_events.jsonl
+```
+
+These logs capture selected security decisions.
+
+They are not a production audit platform.
+
+---
+
+## AU-3 — Content of Audit Records
+
+Useful fields include:
+
+- Timestamp
+- Correlation identifier
+- User identifier
+- Role
+- Prompt-risk category
+- Policy action
+- Retrieved document
+- Denied document
+- Authorization result
+- Security alert
+
+The exact event schema should follow enterprise logging standards in production.
+
+---
+
+## AU-6 — Audit Record Review
+
+A production organization may analyze AI events for:
+
+- Repeated denied access
+- Prompt-injection attempts
+- Sensitive-data activity
+- Retrieval anomalies
+- Administrative changes
+- Logging failures
+
+The local prototype creates evidence but does not implement SOC review or enterprise alerting.
+
+---
+
+## AU-8 — Time Stamps
+
+The prototype records timestamps and correlation identifiers.
+
+Production systems should use enterprise time-synchronization and event-correlation standards.
+
+---
+
+## AU-9 — Protection of Audit Information
+
+Production logs may themselves contain sensitive information.
+
+Controls may include:
+
+- Least-privilege log access
+- Integrity protection
+- Retention rules
+- Minimization
+- Redaction
+
+The local JSONL files are prototype evidence only and are not equivalent to protected enterprise audit storage.
+
+---
+
+# AT — Awareness and Training
+
+Users of a production AI system should understand:
+
+- Approved uses
+- Prohibited uses
+- Data-handling expectations
+- AI limitations
+- Escalation requirements
+- Why AI output is not automatically authoritative
+
+Role-specific training may also be needed for:
+
+- Administrators
+- Content owners
+- Reviewers
+- IAM teams
+- Security operations
+
+This repository documents those expectations but does not deliver an organizational training program.
+
+---
+
+# CA — Assessment, Authorization, and Monitoring
+
+## CA-2 — Control Assessments
+
+Controls should be evaluated before production use and after significant change.
+
+Relevant areas include:
+
+- Authorization
+- Prompt security
+- Retrieval behavior
+- Logging
+- Data handling
+- Human accountability
+- Provider risk
+
+### Current Evidence
+
+Two scenarios are documented as executed:
+
+1. Authorized policy retrieval — **Pass**
+2. Direct prompt injection blocked before retrieval — **Pass**
+
+Other documented tests remain **Not Yet Tested**.
+
+---
+
+## CA-7 — Continuous Monitoring
+
+A production deployment may require monitoring of:
+
+- Prompt abuse
+- Authorization failures
+- Sensitive-data attempts
+- Usage
+- Cost
+- Configuration changes
+- Provider changes
+- Logging failures
+
+The current prototype does not implement continuous enterprise monitoring.
+
+---
+
+# CM — Configuration Management
+
+## CM-2 — Baseline Configuration
+
+Security-relevant configuration may include:
+
+- Approved user roles
+- Document metadata rules
+- Prompt-risk rules
+- Retrieval behavior
+- Logging
+- Provider/model configuration
+- Human-review rules
+
+The current repository documents a local prototype baseline and broader production design.
+
+---
+
+## CM-3 — Configuration Change Control
+
+Changes that could alter risk include:
+
+- Prompt-control logic
+- Authorization logic
+- Retrieval behavior
+- Model/provider
+- Data sources
+- Logging
+- User population
+- Tool/agent integration
+
+These changes should trigger appropriate review.
+
+---
+
+## CM-6 — Configuration Settings
+
+Examples of security-relevant settings include:
+
+- Deny behavior
+- Metadata requirements
+- Prompt-risk categories
+- Access rules
+- Logging fields
+- Provider settings
+
+The current prototype hardcodes several of these behaviors.
+
+A production implementation would need formal configuration management.
+
+---
+
+## CM-8 — Component Inventory
+
+A production AI system may include:
+
+- Application
 - Identity provider
-- Document repositories
-- Retrieval layer
-- Vector store or search index
-- Model provider or local model
+- Knowledge repositories
+- Retrieval service
+- Vector store
+- Model provider
 - Logging platform
-- Human review system
-- Dependencies and libraries
-- Cloud services if deployed
+- Monitoring platform
+- Workflow systems
+- Libraries
+- Agents or tools
 
-### Supporting Artifacts
-
-- architecture/reference_architecture.md
-- architecture/deployment_options.md
+The current prototype contains only a small local subset of this stack.
 
 ---
 
-# Contingency Planning Family
+# CP — Contingency Planning
 
-## CP-2: Contingency Plan
+## CP-2 — Contingency Planning
 
-### Control Relevance
+AI should not become the only path to authoritative business information.
 
-The organization should define what happens if the AI assistant is unavailable or unsafe to use.
+If the AI service is unavailable or unsafe, users should be able to return to approved source systems where appropriate.
 
-### Project Implementation
+Potential failure scenarios include:
 
-- Provide fallback to source documents
-- Disable AI functionality if controls fail
-- Define manual review paths
-- Define response if logging fails
-- Define response if model provider is unavailable
-- Define cost or usage shutdown triggers
-
-### Supporting Artifacts
-
-- architecture/deployment_options.md
-- incident_response/ai_incident_response_playbook.md
-
-## CP-10: System Recovery and Reconstitution
-
-### Control Relevance
-
-If the assistant is disabled due to incident or misconfiguration, safe recovery steps are required.
-
-### Project Implementation
-
-- Validate access controls before re-enabling
-- Validate prompt injection controls
-- Validate retrieval filtering
-- Validate response validation
-- Validate logging
-- Reindex approved documents if needed
-- Document recovery decision
-
-### Supporting Artifacts
-
-- incident_response/ai_incident_response_playbook.md
+- Model outage
+- Retrieval failure
+- Identity failure
+- Logging failure
+- Provider outage
+- Cost threshold exceeded
 
 ---
 
-# Identification and Authentication Family
+## CP-10 — Recovery
 
-## IA-2: Identification and Authentication
+Before restoring a production AI capability after a security issue, the organization may need to validate:
 
-### Control Relevance
+- Identity
+- Authorization
+- Retrieval
+- Logging
+- Data sources
+- Provider configuration
+- Security controls
 
-The AI assistant should identify and authenticate all users.
-
-### Project Implementation
-
-- Require enterprise SSO for production deployment
-- Require MFA
-- Avoid anonymous access
-- Use trusted identity attributes
-- Log authenticated user ID for activity tracking
-
-### Supporting Artifacts
-
-- security/access_control_model.md
-- architecture/trust_boundaries.md
-
-## IA-4: Identifier Management
-
-### Control Relevance
-
-User and service identifiers must be managed consistently.
-
-### Project Implementation
-
-- Use unique user IDs
-- Use service identities for application components
-- Avoid shared accounts
-- Associate logs with verified identities
-- Remove or disable accounts when no longer needed
-
-### Supporting Artifacts
-
-- security/access_control_model.md
-- security/logging_monitoring.md
-
-## IA-5: Authenticator Management
-
-### Control Relevance
-
-Credentials and secrets must be protected and not exposed to AI prompts, responses, documents, or logs.
-
-### Project Implementation
-
-- Prohibit secrets in prompts
-- Detect and block secrets
-- Use secrets management tools outside the AI assistant
-- Rotate exposed secrets if detected
-- Do not store API keys in markdown files or logs
-- Protect model provider credentials if future API use occurs
-
-### Supporting Artifacts
-
-- governance/data_classification.md
-- security/prompt_injection_controls.md
-- incident_response/ai_incident_response_playbook.md
+The current prototype does not implement production recovery procedures.
 
 ---
 
-# Incident Response Family
+# IA — Identification and Authentication
 
-## IR-4: Incident Handling
+## IA-2 — Identification and Authentication
 
-### Control Relevance
+Production access should rely on trusted enterprise identity.
 
-AI-related security events require defined handling procedures.
+Possible mechanisms include:
 
-### Project Implementation
+- SSO
+- MFA
+- Conditional access
+- Trusted identity claims
 
-Define response steps for:
+The current prototype uses synthetic local users.
+
+It does not implement enterprise authentication.
+
+---
+
+## IA-4 — Identifier Management
+
+Production identities should be unique and traceable.
+
+Shared identities should generally be avoided for security-relevant actions.
+
+The prototype uses unique synthetic user IDs for local testing.
+
+---
+
+## IA-5 — Authenticator Management
+
+Credentials should remain outside:
+
+- Prompts
+- Documents
+- Logs
+- Source code
+- Model context
+
+The prototype includes simple patterns for selected secret-like values.
+
+This is not a full secrets-management solution.
+
+---
+
+# IR — Incident Response
+
+## IR-4 — Incident Handling
+
+Potential AI-related security scenarios include:
 
 - Prompt injection
-- System prompt leakage
-- Sensitive data exposure
 - Unauthorized retrieval
-- Poisoned documents
-- Unsafe output
-- Excessive usage
-- Human review bypass
+- Sensitive-data exposure
+- Knowledge-source poisoning
+- System-prompt leakage
 - Logging failure
+- Administrative misconfiguration
+- Provider issue
 
-### Supporting Artifacts
+The repository contains an AI incident-response playbook.
 
-- incident_response/ai_incident_response_playbook.md
+It is an architecture artifact, not evidence of an operating enterprise IR program.
 
-## IR-5: Incident Monitoring
+---
 
-### Control Relevance
+## IR-5 — Incident Monitoring
 
-AI incidents should be detected through monitoring and alerting.
+Security events may be detected through:
 
-### Project Implementation
+- Application logs
+- Authorization events
+- Provider telemetry
+- IAM telemetry
+- SIEM analytics
 
-Monitor:
+Only local application evidence exists in the current prototype.
 
-- Prompt injection attempts
-- Sensitive data detections
-- Unauthorized retrieval
-- System prompt extraction attempts
-- Cost spikes
-- Logging failures
-- High-risk review events
-- Administrative changes
+---
 
-### Supporting Artifacts
+## IR-6 — Incident Reporting
 
-- security/logging_monitoring.md
-- incident_response/ai_incident_response_playbook.md
-
-## IR-6: Incident Reporting
-
-### Control Relevance
-
-AI-related incidents should be reported to appropriate internal teams.
-
-### Project Implementation
-
-Escalate incidents to:
+Potential stakeholders may include:
 
 - Security Operations
 - Security Architecture
@@ -675,583 +544,531 @@ Escalate incidents to:
 - Privacy
 - Legal
 - Compliance
-- Vendor Risk
 - Business Owner
+- Vendor Risk
 
-### Supporting Artifacts
-
-- incident_response/ai_incident_response_playbook.md
-- governance/human_review_requirements.md
-
-## IR-8: Incident Response Plan
-
-### Control Relevance
-
-The AI assistant should have a documented incident response plan.
-
-### Project Implementation
-
-- Define severity levels
-- Define incident categories
-- Define triage questions
-- Define containment options
-- Define evidence collection
-- Define recovery and post-incident review
-- Define escalation matrix
-
-### Supporting Artifacts
-
-- incident_response/ai_incident_response_playbook.md
+The appropriate escalation depends on consequence.
 
 ---
 
-# Planning Family
+## IR-8 — Incident Response Plan
 
-## PL-2: System Security and Privacy Plans
-
-### Control Relevance
-
-The AI assistant should have documented security and privacy planning artifacts.
-
-### Project Implementation
-
-- Document business case
-- Document architecture
-- Document data flows
-- Document trust boundaries
-- Document access control
-- Document logging
-- Document human review
-- Document incident response
-- Document compliance mappings
-
-### Supporting Artifacts
-
-- README.md
-- business_case.md
-- architecture/reference_architecture.md
-- architecture/data_flow.md
-- architecture/trust_boundaries.md
-
-## PL-8: Security and Privacy Architectures
-
-### Control Relevance
-
-The AI assistant should be designed with security and privacy as architectural principles.
-
-### Project Implementation
-
-- Use local-first prototype to reduce exposure
-- Enforce identity-aware retrieval
-- Apply data classification
-- Validate outputs
-- Protect logs
-- Require human review
-- Avoid processing real sensitive data during initial phase
-- Avoid cloud deployment until cost and governance controls are ready
-
-### Supporting Artifacts
-
-- architecture/reference_architecture.md
-- architecture/deployment_options.md
-- cost_controls.md
+AI-specific response considerations should integrate into the enterprise incident-response process rather than create an isolated security program.
 
 ---
 
-# Risk Assessment Family
+# PL — Planning
 
-## RA-3: Risk Assessment
+## PL-2 — System Security and Privacy Planning
 
-### Control Relevance
+This repository contains planning artifacts for:
 
-AI use cases should be evaluated for data, access, prompt, model, vendor, operational, and compliance risk.
+- Business context
+- Architecture
+- Data flow
+- Trust boundaries
+- Access control
+- Logging
+- Governance
+- Human accountability
+- Incident response
+- Cloud options
 
-### Project Implementation
+These support architecture planning but are not a formal federal System Security Plan.
 
-- Use AI risk assessment scoring
-- Maintain AI risk register
-- Identify prohibited and approved pilot use cases
-- Assign risk owners
-- Define risk treatment options
-- Review risk before pilot or production deployment
+---
 
-### Supporting Artifacts
+## PL-8 — Security and Privacy Architectures
 
-- governance/ai_risk_assessment.md
+The project applies:
 
-## RA-5: Vulnerability Monitoring and Scanning
+- Security by design
+- Least privilege
+- Deny by default
+- Data minimization
+- Separation of duties
+- Source traceability
+- Defense in depth
+- Human accountability
 
-### Control Relevance
+The local-first implementation reduces exposure while selected controls are validated.
 
-The AI assistant may depend on libraries, tools, models, and infrastructure that require vulnerability monitoring.
+---
 
-### Project Implementation
+# RA — Risk Assessment
 
-For future implementation:
+## RA-3 — Risk Assessment
 
-- Scan dependencies
-- Pin package versions
-- Review open-source libraries
-- Review container images if used
-- Monitor model and provider updates
-- Track vulnerabilities in supporting components
+AI risk should be evaluated in business context.
 
-### Supporting Artifacts
+Relevant factors include:
 
-- security/owasp_llm_top10_mapping.md
-- architecture/deployment_options.md
+- Data sensitivity
+- User population
+- System authority
+- Exposure
+- Threat likelihood
+- Control maturity
+- Business consequence
 
-## RA-7: Risk Response
+The project uses qualitative risk analysis rather than additive numeric scoring.
 
-### Control Relevance
+---
 
-Identified AI risks require treatment decisions.
+## RA-5 — Vulnerability Monitoring and Scanning
 
-### Project Implementation
+A production system may require vulnerability management for:
 
-Risk treatment options include:
+- Libraries
+- Containers
+- Infrastructure
+- APIs
+- Retrieval systems
+- Providers
 
-- Accept
+The current prototype does not provide formal vulnerability-management evidence.
+
+---
+
+## RA-7 — Risk Response
+
+Possible treatment choices include:
+
 - Mitigate
-- Transfer
 - Avoid
+- Accept
+- Transfer
 - Defer
+- Redesign
+- Escalate
 
-High risks such as prompt injection, sensitive data exposure, unauthorized retrieval, and excessive agency should be mitigated or avoided.
-
-### Supporting Artifacts
-
-- governance/ai_risk_assessment.md
-- incident_response/ai_incident_response_playbook.md
+Formal risk acceptance belongs to the authorized organizational risk owner.
 
 ---
 
-# System and Services Acquisition Family
+# SA — System and Services Acquisition
 
-## SA-4: Acquisition Process
+## SA-4 — Acquisition Process
 
-### Control Relevance
+Before adopting a cloud or model provider, an organization may need to review:
 
-If an AI provider, SaaS tool, or cloud service is used, security and privacy requirements must be included in evaluation.
-
-### Project Implementation
-
-Evaluate:
-
-- Provider data handling
-- Retention of prompts and responses
-- Training on enterprise data
-- Logging capability
-- Region and data residency
-- IAM integration
-- Contractual obligations
+- Data handling
+- Retention
+- Training use
+- Security controls
+- Identity integration
+- Auditability
+- Data residency
+- Incident notification
 - Exit strategy
-- Cost model
+- Cost
 
-### Supporting Artifacts
-
-- governance/ai_use_case_intake.md
-- architecture/deployment_options.md
-
-## SA-9: External System Services
-
-### Control Relevance
-
-Third-party AI providers, SaaS tools, and cloud services must be reviewed and governed.
-
-### Project Implementation
-
-- Treat AWS Bedrock, Azure OpenAI, OpenAI API, and SaaS AI tools as reference designs only in early phases
-- Require vendor risk review before use
-- Prohibit sensitive data transfer without approval
-- Confirm data retention and training policies
-- Define service monitoring and incident escalation
-
-### Supporting Artifacts
-
-- architecture/deployment_options.md
-- cloud_reference_only/aws_bedrock_design_only.md
-- cloud_reference_only/azure_openai_design_only.md
-
-## SA-10: Developer Configuration Management
-
-### Control Relevance
-
-If a local prototype or application is created, development artifacts should be controlled.
-
-### Project Implementation
-
-- Track code changes in GitHub
-- Document configuration
-- Do not commit secrets
-- Use `.gitignore` for local logs, virtual environments, and credentials
-- Review changes to prompt filters, access logic, and retrieval behavior
-
-### Supporting Artifacts
-
-- local_prototype/README.md
-- cost_controls.md
-
-## SA-11: Developer Testing and Evaluation
-
-### Control Relevance
-
-Prompt injection, access control, and retrieval behavior should be tested before any deployment.
-
-### Project Implementation
-
-Test:
-
-- Prompt injection attempts
-- System prompt extraction
-- Unauthorized document retrieval
-- Sensitive data prompts
-- Restricted document requests
-- Missing source citations
-- Human review triggers
-- Logging generation
-
-### Supporting Artifacts
-
-- security/prompt_injection_controls.md
-- security/logging_monitoring.md
-- governance/human_review_requirements.md
+The current project does not use an external AI provider.
 
 ---
 
-# System and Communications Protection Family
+## SA-9 — External System Services
 
-## SC-7: Boundary Protection
+AWS Bedrock and Azure OpenAI are represented only as reference architectures.
 
-### Control Relevance
+No cloud AI service is deployed.
 
-The AI assistant has multiple trust boundaries that require protection.
-
-### Project Implementation
-
-- Treat user input as untrusted
-- Enforce identity boundary
-- Enforce retrieval boundary
-- Validate model output
-- Protect logging boundary
-- Separate administrative boundary
-- Review cloud provider boundary before deployment
-
-### Supporting Artifacts
-
-- architecture/trust_boundaries.md
-
-## SC-8: Transmission Confidentiality and Integrity
-
-### Control Relevance
-
-If deployed beyond local prototype, data transmitted between users, application, identity provider, retrieval layer, model, and logging system must be protected.
-
-### Project Implementation
-
-- Use TLS for communications
-- Protect model API calls
-- Protect log transmission
-- Use private networking where appropriate
-- Avoid sending sensitive data to unapproved external providers
-
-### Supporting Artifacts
-
-- architecture/deployment_options.md
-- cloud_reference_only/aws_bedrock_design_only.md
-- cloud_reference_only/azure_openai_design_only.md
-
-## SC-12: Cryptographic Key Establishment and Management
-
-### Control Relevance
-
-Encryption keys and secrets must be protected if cloud or API services are used.
-
-### Project Implementation
-
-- Use approved secrets management tools
-- Do not store credentials in prompts, documents, code, or logs
-- Use KMS or Key Vault in cloud reference designs
-- Rotate secrets if exposed
-- Restrict key access
-
-### Supporting Artifacts
-
-- governance/data_classification.md
-- incident_response/ai_incident_response_playbook.md
-
-## SC-13: Cryptographic Protection
-
-### Control Relevance
-
-Sensitive documents, logs, embeddings, and configuration should be encrypted when stored or transmitted.
-
-### Project Implementation
-
-- Encrypt stored documents where applicable
-- Encrypt logs where applicable
-- Encrypt vector stores or embeddings based on source classification
-- Encrypt API communications
-- Use cloud-native encryption if cloud deployment occurs
-
-### Supporting Artifacts
-
-- governance/data_classification.md
-- architecture/deployment_options.md
-
-## SC-28: Protection of Information at Rest
-
-### Control Relevance
-
-Documents, logs, embeddings, and review records may contain sensitive information.
-
-### Project Implementation
-
-- Protect local files during prototype
-- Avoid real sensitive data in local prototype
-- Classify embeddings based on source data
-- Restrict access to logs and review records
-- Use encryption for cloud storage if deployed
-
-### Supporting Artifacts
-
-- governance/data_classification.md
-- security/logging_monitoring.md
+Any real provider would require organization-specific review.
 
 ---
 
-# System and Information Integrity Family
+## SA-10 — Developer Configuration Management
 
-## SI-3: Malicious Code Protection
+The local prototype is maintained in source control and includes:
 
-### Control Relevance
+- Code
+- Configuration
+- Metadata
+- Test definitions
+- Documentation
 
-AI assistants may depend on libraries, document parsers, plugins, containers, or integrations that could introduce malicious code risk.
+The repository should avoid committed credentials or sensitive data.
 
-### Project Implementation
+---
 
-For future implementation:
+## SA-11 — Developer Testing and Evaluation
 
-- Scan dependencies
-- Avoid untrusted plugins
-- Review document processing libraries
-- Avoid executing AI-generated code
-- Treat AI output as untrusted
-
-### Supporting Artifacts
-
-- security/owasp_llm_top10_mapping.md
-- architecture/deployment_options.md
-
-## SI-4: System Monitoring
-
-### Control Relevance
-
-The system must be monitored for attacks, misuse, data leakage, unauthorized retrieval, and operational failures.
-
-### Project Implementation
-
-Monitor:
+The project contains test definitions for:
 
 - Prompt injection
-- Sensitive data submission
-- System prompt extraction
-- Unauthorized retrieval
-- Excessive usage
-- Model failures
-- Logging failures
-- Human review bypass
-- Admin changes
+- Access control
+- Sensitive-data handling
 
-### Supporting Artifacts
+Only two initial scenarios are currently documented as executed.
 
-- security/logging_monitoring.md
-
-## SI-10: Information Input Validation
-
-### Control Relevance
-
-User prompts and document content must be treated as untrusted input.
-
-### Project Implementation
-
-- Validate prompts
-- Detect injection phrases
-- Detect secrets and regulated data
-- Flag restricted requests
-- Scan documents for malicious embedded instructions
-- Avoid treating retrieved content as instructions
-
-### Supporting Artifacts
-
-- security/prompt_injection_controls.md
-- governance/data_classification.md
-- architecture/trust_boundaries.md
-
-## SI-12: Information Management and Retention
-
-### Control Relevance
-
-Prompt logs, response metadata, review records, documents, and embeddings require retention decisions.
-
-### Project Implementation
-
-- Avoid full prompt logging by default
-- Define retention by log type
-- Remove expired indexed content
-- Retain human review records according to governance needs
-- Define audit evidence retention
-
-### Supporting Artifacts
-
-- security/logging_monitoring.md
-- governance/data_classification.md
+Defined tests should not be presented as successful until run.
 
 ---
 
-# Supply Chain Risk Management Family
+# SC — System and Communications Protection
 
-## SR-3: Supply Chain Controls and Processes
+## SC-7 — Boundary Protection
 
-### Control Relevance
+Important production trust boundaries include:
 
-AI systems often depend on external models, APIs, open-source libraries, vector databases, and SaaS platforms.
+- User → Application
+- Application → Identity
+- Application → Retrieval
+- Retrieval → Knowledge Source
+- Application → Model Provider
+- Application → Logging
+- Administrator → Configuration
 
-### Project Implementation
+The model itself is not treated as a trusted enforcement boundary.
 
-- Review vendors before use
-- Review provider data handling
-- Track dependencies
-- Pin versions
-- Avoid unapproved plugins
-- Maintain model/provider inventory
-- Review cloud reference designs before deployment
+---
 
-### Supporting Artifacts
+## SC-8 — Transmission Confidentiality and Integrity
 
-- security/owasp_llm_top10_mapping.md
-- architecture/deployment_options.md
-- governance/ai_use_case_intake.md
+Future external or cloud deployments should protect information in transit.
 
-## SR-5: Acquisition Strategies, Tools, and Methods
+This may include:
 
-### Control Relevance
+- TLS
+- Private connectivity
+- Protected API calls
+- Controlled egress
 
-Organizations should choose deployment models and providers based on risk, not convenience alone.
+The local prototype does not send data to an external model provider.
 
-### Project Implementation
+---
 
-- Compare local mock, local LLM, cloud-managed, private hosting, and SaaS options
-- Use local-first approach to reduce risk
-- Require cloud cost and security decision gates
-- Require vendor review before third-party provider use
+## SC-12 / SC-13 — Cryptographic Protection
 
-### Supporting Artifacts
+A production environment may use:
 
-- architecture/deployment_options.md
-- cost_controls.md
+- KMS
+- Key Vault
+- Enterprise secrets management
+- Platform encryption
 
-## SR-6: Supplier Assessments and Reviews
+The project documents these as production architecture considerations.
 
-### Control Relevance
+It does not implement cloud key-management controls.
 
-External AI providers and SaaS tools must be assessed before use.
+---
 
-### Project Implementation
+## SC-28 — Protection of Information at Rest
 
-Assess:
+Production controls should protect:
 
-- Prompt and response retention
-- Model training use
+- Documents
+- Logs
+- Configuration
+- Retrieval data
+- Review records
+
+The current prototype avoids real sensitive data, substantially reducing the consequence of local storage exposure.
+
+---
+
+# SI — System and Information Integrity
+
+## SI-3 — Malicious Code Protection
+
+A production implementation should evaluate:
+
+- Dependencies
+- Document parsers
+- Plugins
+- Containers
+- Generated code
+- Tool integrations
+
+The current architecture does not permit autonomous execution of AI-generated commands.
+
+---
+
+## SI-4 — System Monitoring
+
+Production monitoring may detect:
+
+- Prompt injection
+- Authorization failures
+- Sensitive-data activity
+- Retrieval anomalies
+- Provider issues
+- Configuration changes
+
+The current prototype produces local logs only.
+
+---
+
+## SI-10 — Information Input Validation
+
+User prompts and retrieved content should be treated as untrusted input.
+
+The local prototype implements selected pattern-based prompt checks.
+
+It does not implement:
+
+- Semantic injection detection
+- Indirect prompt-injection defense
+- Production document scanning
+
+Therefore the current evidence is limited.
+
+---
+
+## SI-12 — Information Management and Retention
+
+Production environments should define retention for:
+
+- Logs
+- Prompts
+- Responses
+- Review records
+- Provider records
+- Knowledge sources
+
+The local prototype does not implement formal retention enforcement.
+
+---
+
+# SR — Supply Chain Risk Management
+
+## SR-3 — Supply Chain Controls
+
+AI architectures may depend on:
+
+- Model providers
+- Cloud providers
+- Open-source packages
+- Retrieval platforms
+- Document parsers
+- Agent frameworks
+- Plugins
+
+A production implementation should identify and assess these dependencies.
+
+---
+
+## SR-5 — Acquisition Strategy
+
+The architecture intentionally compares multiple possible deployment patterns rather than assuming cloud AI is automatically required.
+
+Possible approaches include:
+
+- Local security-control validation
+- Local model
+- Managed cloud model
+- Private deployment
+- SaaS AI
+
+The selection should follow business need and risk.
+
+---
+
+## SR-6 — Supplier Assessment
+
+Potential review topics include:
+
+- Data retention
+- Training use
 - Data residency
-- Logging availability
 - Security certifications
+- Logging capability
 - Incident notification
-- Access controls
-- Admin capabilities
+- Access control
+- Administrative functions
 - Exit strategy
 
-### Supporting Artifacts
-
-- governance/ai_use_case_intake.md
-- architecture/deployment_options.md
+These are production supplier-governance requirements.
 
 ---
 
-# AI-Specific Risk to NIST 800-53 Mapping
+# AI-Specific Risk Mapping
 
-| AI Risk | Related NIST Control Areas | Project Control |
-|---|---|---|
-| Prompt Injection | SI-10, SI-4, AU-2, RA-3 | Prompt filtering, monitoring, logging, testing |
-| Sensitive Data Disclosure | AC-3, AC-6, SC-28, AU-9, SI-12 | Access control, data classification, log minimization |
-| Unauthorized Retrieval | AC-3, AC-16, AU-2, SI-4 | Document-level authorization and retrieval logs |
-| System Prompt Leakage | SI-10, SI-4, SC-7 | Output validation and prompt hardening |
-| Misinformation | CA-2, RA-3, SI-4 | Source citation, response validation, human review |
-| Excessive Agency | AC-6, AC-5, CM-6 | Read-only design, least privilege, human approval |
-| Poisoned Documents | CM-3, SI-10, RA-3 | Ingestion approval, content review, metadata controls |
-| Weak Auditability | AU-2, AU-3, AU-6, AU-12 | Structured logging and correlation IDs |
-| Vendor Data Exposure | SA-9, SR-6, SC-8 | Vendor review and data handling controls |
-| Cost Spike | CA-7, SI-4, CM-6 | Usage monitoring, quotas, budget alerts |
+| AI Risk | Relevant NIST Areas | Architecture Response |
+| --- | --- | --- |
+| Prompt injection | SI, AU, RA | Prompt evaluation plus independent authorization |
+| Sensitive information disclosure | AC, SC, AU | Classification, authorization, minimization |
+| Unauthorized retrieval | AC, AU | Document-level authorization |
+| System-prompt leakage | SI, SC | Keep critical security outside prompt secrecy |
+| Misinformation | RA, CA | Source grounding and human authority |
+| Excessive agency | AC, CM | Advisory design and explicit action authorization |
+| Knowledge poisoning | CM, SI, RA | Approved sources and untrusted-content handling |
+| Weak auditability | AU | Structured event evidence |
+| Vendor exposure | SA, SR, SC | Provider review |
+| Cost growth | CA, CM | Usage and deployment controls |
 
----
+This table shows conceptual alignment.
 
-# Minimum Control Baseline for Local Prototype
+It does not claim that every control is implemented.
 
-| Control Area | Requirement |
-|---|---|
-| Data | Use mock data only |
-| Access | Use mock roles and role-based document filtering |
-| Prompt Security | Detect and block known prompt injection patterns |
-| Retrieval | Restrict retrieval by document classification |
-| Logging | Log prompt metadata and access decisions locally |
-| Human Review | Simulate review triggers for high-risk prompts |
-| Secrets | Block obvious secret patterns |
-| Cost | Do not use cloud services |
-| Incident Response | Document mock incident scenarios |
+# Current Prototype Evidence
 
-## Minimum Control Baseline Before Cloud Deployment
+| Area | Evidence |
+| --- | --- |
+| Identity context | Synthetic user records |
+| Access enforcement | Role/group authorization |
+| Data attributes | Document metadata |
+| Prompt security | Pattern-based prompt-risk logic |
+| Sensitive-data handling | Selected pattern detection |
+| Retrieval | Local keyword retrieval |
+| Logging | Five JSONL evidence types |
+| Security alerts | High-risk event logging |
+| Human oversight | Simulated review trigger |
+| Data protection | Synthetic data only |
+| External provider risk | No external provider used |
+| Cloud cost | No cloud AI deployment |
 
-| Control Area | Requirement |
-|---|---|
-| Identity | SSO and MFA |
-| Access | Role and document-level authorization |
-| Data | Data classification and owner approval |
-| Model | Provider review and model configuration review |
-| Logging | Central logging and alerting |
-| Incident Response | AI incident response process |
-| Human Review | Defined reviewer roles and workflow |
-| Cost | Budget alerts, quotas, teardown plan |
-| Encryption | Encryption in transit and at rest |
-| Vendor Risk | Contract, retention, and training review |
-| Compliance | Control mapping and evidence plan |
+# Validated Scenarios
 
-## Control Ownership
+## Authorized Retrieval
 
-| Control Area | Primary Owner |
-|---|---|
-| Access Control | IAM Team and Security Architecture |
-| Data Classification | Data Owner and Security Governance |
-| Prompt Injection Controls | Security Architecture |
-| Logging and Monitoring | Security Operations |
-| Human Review | Security Governance and Control Owners |
-| Incident Response | Security Operations |
-| Vendor Risk | Vendor Risk Management |
-| Compliance Mapping | Compliance and Security Architecture |
-| Cost Controls | Platform Owner or FinOps |
-| Configuration Management | AI System Administrator |
+A mock General Employee requested the approved synthetic AI policy.
 
-## Security Architect Notes
+**Result: Pass**
 
-This NIST 800-53 mapping demonstrates that AI security is not separate from enterprise security architecture.
+## Direct Prompt Injection
 
-The AI assistant should be governed like an enterprise application, with additional controls for prompt injection, retrieval authorization, output validation, human review, and AI-specific incident response.
+A mock General Employee attempted to override controls and reveal Restricted documents.
 
-The most important architectural principle is that the AI model is not the control authority. Security controls must be enforced through identity, access control, metadata, application logic, logging, monitoring, and accountable human review.
+The request was blocked before retrieval.
 
-## Conclusion
+**Result: Pass**
 
-The secure AI assistant architecture aligns with NIST 800-53 by applying established security control families to AI-specific risks.
+Other test scenarios remain **Not Yet Tested**.
 
-This mapping supports a regulated organization by showing how traditional controls such as access enforcement, audit logging, risk assessment, configuration management, incident response, boundary protection, input validation, and supply chain review apply to AI-enabled workflows.
+# Production Controls Not Demonstrated
 
-The recommended implementation remains local-first and documentation-first until governance, cost controls, data handling, access control, logging, and human review are ready for any future deployment.
+The project does not currently provide evidence for:
+
+- Enterprise account lifecycle
+- SSO
+- MFA
+- PAM
+- Production SIEM
+- Continuous monitoring
+- Formal access reviews
+- Production incident response
+- Enterprise change management
+- Production backups
+- Production resilience
+- Supplier assessments
+- Production DLP
+- Formal retention enforcement
+- Cloud encryption controls
+- Vector security
+- Embedding security
+- Production LLM output validation
+- Autonomous-agent controls
+
+# Control Ownership
+
+Actual ownership belongs to the organization implementing the system.
+
+Illustrative examples include:
+
+| Area | Possible Owner |
+| --- | --- |
+| Identity and access | IAM Team |
+| Data classification | Data Owner |
+| Security architecture | Security Architecture |
+| Logging and monitoring | Security Operations |
+| Incident response | Incident Response / SOC |
+| Provider risk | Vendor Risk |
+| Privacy | Privacy / Legal |
+| Cloud platform | Platform Team |
+| Cost | FinOps / Platform Owner |
+| Risk acceptance | Authorized Risk Owner |
+
+These are not formal assignments made by the portfolio project.
+
+# Relationship to Formal NIST 800-53 Assessment
+
+A formal NIST SP 800-53 implementation would require substantially more evidence than this repository provides.
+
+Depending on organizational context, that may include:
+
+- Control selection
+- Baseline tailoring
+- Control implementation statements
+- System boundary definition
+- Security/privacy plans
+- Control assessments
+- Evidence
+- POA&M management
+- Authorization decisions
+- Continuous monitoring
+- Organizational policies
+
+Those activities are outside the scope of this portfolio project.
+
+# Security Architect Perspective
+
+The value of this mapping is not that AI requires an entirely new security-control universe.
+
+Many AI risks are new expressions of familiar control failures.
+
+For example:
+
+```text
+Prompt Injection
+        ↓
+Attempts to influence behavior
+        ↓
+Authorization still applies
+```
+
+```text
+Semantic Retrieval
+        ↓
+Finds relevant content
+        ↓
+Access Control still applies
+```
+
+```text
+AI Recommendation
+        ↓
+May influence a decision
+        ↓
+Human authority still applies
+```
+
+That is why traditional security architecture remains central.
+
+AI changes the interface and attack paths.
+
+It does not remove the need for:
+
+- Identity
+- Least privilege
+- Segregation of duties
+- Logging
+- Change control
+- Incident response
+- Risk management
+- Supply-chain governance
+- Resilience
+
+# Conclusion
+
+This architecture maps naturally to selected NIST SP 800-53 control families because AI is still part of an enterprise information system.
+
+The local prototype provides evidence for only a small subset of those security concepts.
+
+It does not constitute a formal NIST 800-53 control implementation or authorization package.
+
+The current progression is:
+
+```text
+Architecture and Governance
+        ↓
+Local Security-Control Prototype
+        ↓
+Selected Control Validation
+        ↓
+Cloud Reference Architectures
+```
+
+The key architecture principle remains:
+
+> Apply AI-specific defenses without allowing AI to bypass established enterprise security controls.
