@@ -61,18 +61,6 @@ The prototype should:
 - Write a prompt event log
 - Write a security alert log
 
-## Issue Found During Initial Testing
-
-During the first execution, `app.py` contained an accidental file-path label on the first line, which caused the application to fail before execution.
-
-The invalid line was removed and the prototype was rerun successfully.
-
-The current repository version begins with valid Python imports and contains the corrected code.
-
-**Status: Resolved**
-
-This was a useful validation step because it demonstrated the importance of executing and testing the prototype rather than relying only on code review.
-
 ## Actual Result
 
 The prototype returned:
