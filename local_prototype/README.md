@@ -1,4 +1,4 @@
-# Local Prototype
+# Project Artifacts
 
 ## Purpose
 
